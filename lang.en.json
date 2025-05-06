@@ -1,0 +1,20 @@
+{
+  "nav_plugins": "Plugins",
+  "main_title": "DP-PLUGINS",
+  "main_subtitle": "Introducing simple \"free\" plugins for Minecraft servers",
+  "main_btn": "View Plugins",
+  "plugins_section_title": "Plugins",
+  "search_placeholder": "Search plugins...",
+  "no_results": "No results found.",
+  "modal_detail": "Details",
+  "modal_screenshot": "Screenshot",
+  "modal_screenshot_ready": "(Image coming soon)",
+  "modal_install": "Installation",
+  "modal_update_log": "Update Log",
+  "modal_update_log_ready": "(Update log coming soon)",
+  "modal_update": "Always keep your plugin up to date.",
+  "modal_download": "Download",
+  "modal_dependencies": "Dependencies",
+  "modal_none": "None",
+  "modal_required": "Requires DPP-Core"
+}

@@ -1,0 +1,20 @@
+{
+  "nav_plugins": "플러그인 목록",
+  "main_title": "DP-PLUGINS",
+  "main_subtitle": "마인크래프트 서버를 위한 심플한 \"무료\" 플러그인들을 소개합니다",
+  "main_btn": "플러그인 목록보기",
+  "plugins_section_title": "플러그인 목록",
+  "search_placeholder": "플러그인 검색...",
+  "no_results": "검색 결과가 없습니다.",
+  "modal_detail": "자세히 보기",
+  "modal_screenshot": "스크린샷",
+  "modal_screenshot_ready": "(이미지 준비중)",
+  "modal_install": "설치법",
+  "modal_update_log": "업데이트 내역",
+  "modal_update_log_ready": "(업데이트 내역 준비중)",
+  "modal_update": "항상 최신버전으로 업데이트 하세요.",
+  "modal_download": "다운로드",
+  "modal_dependencies": "의존성",
+  "modal_none": "없음",
+  "modal_required": "DPP-Core 필요"
+}

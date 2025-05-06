@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DP-PLUGINS</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="icon" href="DPP_32.ico" sizes="32x32" type="image/x-icon">
+    <link rel="icon" href="DPP_16.ico" sizes="16x16" type="image/x-icon">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body class="light">
+    <!-- 네비게이션 바 -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-white/5 backdrop-blur-sm border-b border-red-500/10">
+        <span id="nav-plugins" style="display:none;">플러그인 목록</span>
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <a href="#" class="flex items-center">
+                    <img src="assets/img/logo.png" alt="DP-PLUGINS" class="h-12 w-auto">
+                </a>
+                <div class="hidden md:flex items-center space-x-4 bg-black/50">
+    <button id="lang-toggle-btn" class="ml-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold transition-all duration-200">
+        <i class="fas fa-globe"></i>
+        <span id="lang-toggle-text">한국어</span>
+    </button>
+                    <div class="sns-container bg-white/5 rounded-lg p-2 flex items-center">
+                        <a href="https://discord.gg/JnMCqkn2FX" target="_blank"
+                            class="w-12 h-12 flex items-center justify-center rounded-full hover:bg-black/50 hover:scale-110 transition-all duration-300">
+                            <i
+                                class="fab fa-discord text-white/80 hover:text-white transition-colors duration-300 text-xl"></i>
+                        </a>
+                        <a href="https://github.com/darksoldier1404" target="_blank"
+                            class="w-12 h-12 flex items-center justify-center rounded-full hover:bg-black/50 hover:scale-110 transition-all duration-300">
+                            <i
+                                class="fab fa-github text-white/80 hover:text-white transition-colors duration-300 text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 메인 섹션 -->
+    <header class="relative h-screen flex items-center justify-center bg-gradient-to-b from-black/90 to-black/80">
+        <div class="absolute inset-0">
+            <img src="assets/img/background.png" alt="background" class="w-full h-full object-cover">
+        </div>
+        <div class="relative container mx-auto px-4">
+            <div class="max-w-4xl mx-auto bg-black/80 backdrop-blur-sm rounded-2xl p-8 text-center">
+                <h1 id="main-title"
+                    class="text-5xl md:text-6xl font-bold text-red-500 bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-red-600 mb-4">
+                    DP-PLUGINS
+                </h1>
+                <p id="main-subtitle" class="text-xl text-white/80 max-w-2xl mx-auto mb-8">
+                    마인크래프트 서버를 위한 심플한 "무료" 플러그인들을 소개합니다
+                </p>
+                <a id="main-btn" href="#plugins"
+                    class="inline-block bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-3 rounded-full hover:from-red-600 hover:to-red-700 transition-all duration-300"
+                    onclick="smoothScrollToPlugins()">
+                    플러그인 목록보기
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 플러그인 섹션 -->
+    <section class="plugins-section py-16 bg-[#222831]">
+        <div class="container mx-auto px-4">
+            <h2 id="plugins-section-title" class="text-3xl md:text-4xl font-bold text-red-500 text-center mb-12">
+                플러그인 목록
+            </h2>
+            <div class="relative w-full md:w-1/2 mx-auto mb-8 flex items-center"
+                style="background:#fff;border-radius:2rem;box-shadow:0 8px 32px 0 rgba(255,0,0,0.13);">
+                <i
+                    class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-red-400 text-lg pointer-events-none"></i>
+                <input type="text" id="search-input" placeholder="플러그인 검색..."
+                    class="allow-select w-full px-4 py-2 pl-11 rounded-full" autocomplete="off">
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="plugins-container">
+                <!-- 플러그인 카드가 자동으로 여기에 추가됩니다 -->
+            </div>
+        </div>
+    </section>
+
+    <!-- 플러그인 상세 모달 -->
+    <div id="plugin-modal-overlay"
+        class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center">
+        <div id="plugin-modal"
+            class="relative bg-black/95 rounded-2xl max-w-lg w-full mx-4 p-8 shadow-2xl border border-red-700/40 text-white animate-fadein">
+            <button id="plugin-modal-close"
+                class="absolute top-4 right-4 text-xl text-white/60 hover:text-white/90 focus:outline-none"><i
+                    class="fas fa-times"></i></button>
+            <div id="plugin-modal-content">
+                <!-- JS로 내용 동적으로 채움 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 푸터 -->
+    <footer class="bg-black/90 backdrop-blur-sm py-6">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-center items-center">
+                <p class="text-white/80 text-sm">&copy; 2025 DP-PLUGINS. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
