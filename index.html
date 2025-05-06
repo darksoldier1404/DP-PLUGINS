@@ -88,12 +88,14 @@
     <div id="plugin-modal-overlay"
         class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center">
         <div id="plugin-modal"
-            class="relative bg-black/95 rounded-2xl max-w-lg w-full mx-4 p-8 shadow-2xl border border-red-700/40 text-white animate-fadein">
+            class="relative bg-black/95 rounded-2xl max-w-lg w-full mx-4 p-8 shadow-2xl border border-red-700/40 text-white animate-fadein max-h-[80vh] flex flex-col">
             <button id="plugin-modal-close"
                 class="absolute top-4 right-4 text-xl text-white/60 hover:text-white/90 focus:outline-none"><i
                     class="fas fa-times"></i></button>
-            <div id="plugin-modal-content">
-                <!-- JS로 내용 동적으로 채움 -->
+            <div id="plugin-modal-content-wrapper" class="flex-1 overflow-hidden">
+                <div id="plugin-modal-content" class="flex-1">
+                    <!-- JS로 내용 동적으로 채움 -->
+                </div>
             </div>
         </div>
     </div>

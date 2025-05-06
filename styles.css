@@ -421,6 +421,49 @@ body.light-mode .nav-link:hover {
     }
 }
 
+#plugin-modal {
+    overflow: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    max-height: 80vh !important;
+}
+
+#plugin-modal-content-wrapper {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    box-sizing: border-box !important;
+    max-height: calc(80vh - 4rem) !important;
+}
+
+#plugin-modal-content {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding-right: 16px;
+    box-sizing: border-box !important;
+    flex: 1 !important;
+    margin: 0 !important;
+}
+
+/* All child elements overflow prevention */
+#plugin-modal-content * {
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    max-width: 100% !important;
+    word-break: break-word !important;
+}
+
+/* Plugin detail styles */
+#plugin-modal-content .plugin-detail {
+    padding: 1rem !important;
+    margin: 0 !important;
+}
+
 /* 특징 아이템 스타일 */
 .feature-item {
     display: flex;

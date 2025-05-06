@@ -190,7 +190,56 @@ function showPluginModal(plugin) {
     `;
     overlay.classList.remove('hidden');
     overlay.classList.add('flex');
+    document.body.classList.add('overflow-hidden');
 }
+
+// 모달 스크롤 활성화
+function enableModalScroll() {
+    const modal = document.getElementById('plugin-modal');
+    const modalWrapper = document.getElementById('plugin-modal-content-wrapper');
+    const modalContent = document.getElementById('plugin-modal-content');
+    
+    if (modal && modalWrapper && modalContent) {
+        modal.style.overflow = 'hidden';
+        modalWrapper.style.overflowY = 'auto';
+        modalWrapper.style.overflowX = 'hidden';
+        modalContent.style.overflowY = 'auto';
+        modalContent.style.overflowX = 'hidden';
+        
+        // 스크롤바 숨기기
+        modalWrapper.style.msOverflowStyle = 'none';
+        modalWrapper.style.scrollbarWidth = 'none';
+        modalContent.style.msOverflowStyle = 'none';
+        modalContent.style.scrollbarWidth = 'none';
+        
+        // Webkit 브라우저용 스크롤바 숨기기
+        modalWrapper.style.setProperty('-webkit-scrollbar', 'display: none !important', 'important');
+        modalContent.style.setProperty('-webkit-scrollbar', 'display: none !important', 'important');
+    }
+}
+
+// 모달이 열릴 때 스크롤 활성화
+document.addEventListener('DOMContentLoaded', function() {
+    const modalOverlay = document.getElementById('plugin-modal-overlay');
+    if (modalOverlay) {
+        modalOverlay.addEventListener('click', function(e) {
+            if (e.target === modalOverlay) {
+                enableModalScroll();
+            }
+        });
+        
+        // 모달이 표시될 때마다 스크롤 활성화
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (modalOverlay.style.display !== 'none' || modalOverlay.classList.contains('hidden') === false) {
+                    enableModalScroll();
+                }
+            });
+        });
+        
+        observer.observe(modalOverlay, { attributes: true, attributeFilter: ['style', 'class'] });
+    }
+});
 
 // 모달 닫기 이벤트
 window.addEventListener('DOMContentLoaded', () => {
@@ -201,11 +250,13 @@ window.addEventListener('DOMContentLoaded', () => {
             if (e.target === overlay) {
                 overlay.classList.add('hidden');
                 overlay.classList.remove('flex');
+                document.body.classList.remove('overflow-hidden');
             }
         });
         closeBtn.addEventListener('click', () => {
             overlay.classList.add('hidden');
             overlay.classList.remove('flex');
+            document.body.classList.remove('overflow-hidden');
         });
     }
 });
