@@ -398,6 +398,27 @@ body.light-mode .nav-link:hover {
         text-align: center;
         padding: 12px;
     }
+    /* SNS 아이콘 크기 축소 */
+    .sns-container a {
+        width: 36px !important;
+        height: 36px !important;
+        min-width: 36px !important;
+        min-height: 36px !important;
+        padding: 0 !important;
+    }
+    .sns-container i {
+        font-size: 1.1rem !important;
+    }
+    /* 언어변경 버튼 크기 축소 */
+    #lang-toggle-btn {
+        padding: 4px 10px !important;
+        font-size: 0.95rem !important;
+        min-width: 0 !important;
+        height: 36px !important;
+    }
+    #lang-toggle-btn i {
+        font-size: 1rem !important;
+    }
 }
 
 /* 특징 아이템 스타일 */
