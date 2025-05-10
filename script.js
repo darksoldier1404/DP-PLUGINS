@@ -13,9 +13,9 @@ const pluginIcons = {
 
 // 플러그인 이름별 지원 버전
 const pluginSupportVersions = {
-    'DPP-Core': '1.13-1.21',
-    'DP-SimplePrefix': '1.13-1.21',
-    'DP-RandomBox': '1.13-1.21'
+    'DPP-Core': '1.14-1.21.5',
+    'DP-SimplePrefix': '1.14-1.21.5',
+    'DP-RandomBox': '1.14-1.21.5'
 };
 
 // 플러그인 이름별 설명
@@ -191,6 +191,8 @@ function showPluginModal(plugin) {
     overlay.classList.remove('hidden');
     overlay.classList.add('flex');
     document.body.classList.add('overflow-hidden');
+    const contentWrapper = document.getElementById('plugin-modal-content-wrapper');
+    contentWrapper.scrollTo({ top: 0, behavior: 'instant' });
 }
 
 // 모달 스크롤 활성화
