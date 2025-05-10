@@ -34,7 +34,7 @@ async function fetchPluginData() {
         for (const pluginName of pluginsList) {
             let response = await fetch(`https://raw.githubusercontent.com/darksoldier1404/${pluginName}/refs/heads/master/src/main/resources/plugin.yml`);
             if(pluginName === 'DPP-Core') {
-                response = await fetch(`https://raw.githubusercontent.com/darksoldier1404/DPP-Core/refs/heads/master/src/common/resources/plugin.yml`);
+                response = await fetch(`https://raw.githubusercontent.com/darksoldier1404/DPP-Core/refs/heads/master/common/src/main/resources/plugin.yml`);
             }
             if (response.ok) {
                 const yamlText = await response.text();
