@@ -71,8 +71,7 @@ async function updatePluginsSection(plugins, filterValue = '') {
                 p.name,
                 p.description,
                 p.version,
-                p.supportVersion,
-                p.dependencies?.map(d => d.name).join(' ')
+                p.supportVersion
             ].some(field => (field || '').toString().toLowerCase().includes(q))
         );
     }
