@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css">
     <link rel="icon" href="DPP_32.ico" sizes="32x32" type="image/x-icon">
     <link rel="icon" href="DPP_16.ico" sizes="16x16" type="image/x-icon">
+    <link rel="preload" fetchpriority="high" as="image" href="assets/img/logo_white.png" type="image/png">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
 </head>
@@ -29,14 +30,14 @@
                 </a>
                 <div class="flex items-center space-x-4">
                     <div class="sns-container bg-white/5 rounded-lg p-2 flex items-center">
-                        <button id="lang-toggle-btn" class="ml-4 mr-3 flex items-center gap-2 px-2 py-1 md:px-3 md:py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold transition-all duration-200 text-sm md:text-base">
+                        <button id="lang-toggle-btn" aria-label="Language" class="ml-4 mr-3 flex items-center gap-2 px-2 py-1 md:px-3 md:py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold transition-all duration-200 text-sm md:text-base">
                             <i class="fas fa-globe text-base md:text-xl"></i>
                             <span id="lang-toggle-text">한국어</span>
                         </button>
-                        <a href="https://discord.gg/JnMCqkn2FX" target="_blank" class="w-9 h-9 md:w-12 md:h-12 flex items-center justify-center rounded-full hover:bg-black/50 hover:scale-110 transition-all duration-300">
+                        <a href="https://discord.gg/JnMCqkn2FX" aria-label="Discord" target="_blank" class="w-9 h-9 md:w-12 md:h-12 flex items-center justify-center rounded-full hover:bg-black/50 hover:scale-110 transition-all duration-300">
                             <i class="fab fa-discord text-white/80 hover:text-white transition-colors duration-300 text-base md:text-xl"></i>
                         </a>
-                        <a href="https://github.com/darksoldier1404" target="_blank" class="w-9 h-9 md:w-12 md:h-12 flex items-center justify-center rounded-full hover:bg-black/50 hover:scale-110 transition-all duration-300">
+                        <a href="https://github.com/darksoldier1404" aria-label="GitHub" target="_blank" class="w-9 h-9 md:w-12 md:h-12 flex items-center justify-center rounded-full hover:bg-black/50 hover:scale-110 transition-all duration-300">
                             <i class="fab fa-github text-white/80 hover:text-white transition-colors duration-300 text-base md:text-xl"></i>
                         </a>
                     </div>

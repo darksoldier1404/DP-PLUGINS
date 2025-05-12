@@ -1,28 +1,18 @@
 async function fetchPluginData() {
     try {
-        // pluginData.json 로드
         const jsonResponse = await fetch('pluginData.json');
         if (!jsonResponse.ok) throw new Error('pluginData.json 로드 실패');
         const { plugins: jsonPlugins } = await jsonResponse.json();
 
         const plugins = [];
+        const releasesResponse = await fetch('https://raw.githubusercontent.com/darksoldier1404/DPP-Releases/main/releases.json');
+        const releases = await releasesResponse.json();
         for (const jsonPlugin of jsonPlugins) {
-            // GitHub에서 plugin.yml로 버전 정보 가져오기
-            const response = await fetch(
-                jsonPlugin.name === 'DPP-Core'
-                    ? `https://raw.githubusercontent.com/darksoldier1404/DPP-Core/refs/heads/master/common/src/main/resources/plugin.yml`
-                    : `https://raw.githubusercontent.com/darksoldier1404/${jsonPlugin.name}/refs/heads/master/src/main/resources/plugin.yml`
-            );
-            let version = '1.0.0';
-            if (response.ok) {
-                const yamlText = await response.text();
-                const lines = yamlText.split('\n');
-                for (const line of lines) {
-                    const match = line.match(/^version:\s*(.*)$/);
-                    if (match) {
-                        version = match[1];
-                        break;
-                    }
+            let version = '0.0.0.0';
+            if (releasesResponse.ok) {
+                const release = releases.find(r => r.repo.includes(jsonPlugin.name));
+                if (release) {
+                    version = release.tag;
                 }
             }
             plugins.push({
@@ -44,7 +34,6 @@ async function fetchPluginData() {
 }
 
 function createPluginCard(plugin) {
-    // Get the description based on current language, fallback to English if not available
     const description = typeof plugin.description === 'object' 
         ? (plugin.description[currentLang] || plugin.description.en || '')
         : (plugin.description || '');
