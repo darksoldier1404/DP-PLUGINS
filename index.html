@@ -20,31 +20,28 @@
 
 </head>
 
-<body class="light">
+<body class="dark">
     <!-- 네비게이션 바 -->
-    <nav class="fixed top-0 left-0 right-0 z-50 bg-white/70 backdrop-blur-xs border-b border-red-500/10">
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-black/70 backdrop-blur-xs border-b border-red-500/10">
         <span id="nav-plugins" style="display:none;">플러그인 목록</span>
         <div class="container mx-auto px-4">
             <div class="flex items-center justify-between h-16">
-                <a href="#" class="flex items-center">
-                    <img src="assets/img/logo.png" alt="DP-PLUGINS" class="h-10 md:h-12 w-auto">
+                <a href="/" class="flex items-center">
+                    <img src="assets/img/logo_white.png" alt="DP-PLUGINS" class="h-10 md:h-12 w-auto">
                 </a>
-                <div class="flex items-center space-x-4 bg-black/50">
-                    <button id="lang-toggle-btn"
-                        class="ml-4 flex items-center gap-2 px-2 py-1 md:px-3 md:py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold transition-all duration-200 text-sm md:text-base">
+                <div class="flex items-center space-x-4">
+                    <div class="sns-container bg-white/5 rounded-lg p-2 flex items-center">
+                        <button id="lang-toggle-btn" class="ml-4 mr-3 flex items-center gap-2 px-2 py-1 md:px-3 md:py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold transition-all duration-200 text-sm md:text-base">
                         <i class="fas fa-globe text-base md:text-xl"></i>
                         <span id="lang-toggle-text">한국어</span>
-                    </button>
-                    <div class="sns-container bg-white/5 rounded-lg p-2 flex items-center">
+                        </button>
                         <a href="https://discord.gg/JnMCqkn2FX" target="_blank"
                             class="w-9 h-9 md:w-12 md:h-12 flex items-center justify-center rounded-full hover:bg-black/50 hover:scale-110 transition-all duration-300">
-                            <i
-                                class="fab fa-discord text-white/80 hover:text-white transition-colors duration-300 text-base md:text-xl"></i>
+                            <i class="fab fa-discord text-white/80 hover:text-white transition-colors duration-300 text-base md:text-xl"></i>
                         </a>
                         <a href="https://github.com/darksoldier1404" target="_blank"
                             class="w-9 h-9 md:w-12 md:h-12 flex items-center justify-center rounded-full hover:bg-black/50 hover:scale-110 transition-all duration-300">
-                            <i
-                                class="fab fa-github text-white/80 hover:text-white transition-colors duration-300 text-base md:text-xl"></i>
+                            <i class="fab fa-github text-white/80 hover:text-white transition-colors duration-300 text-base md:text-xl"></i>
                         </a>
                     </div>
                 </div>
@@ -53,32 +50,21 @@
     </nav>
 
     <!-- 메인 섹션 -->
-    <header class="relative h-screen flex items-center justify-center bg-gradient-to-b from-black/90 to-black/80">
-        <div class="absolute inset-0">
-            <img src="assets/img/background.webp" alt="background" class="w-full h-full object-cover blur-xs">
-        </div>
+    <header class="relative h-[50vh] flex items-center justify-center bg-[#222831]">
         <div class="relative container mx-auto px-4">
-            <div class="max-w-4xl mx-auto bg-black/80 backdrop-blur-sm rounded-2xl p-8 text-center">
-                <h1 id="main-title"
-                    class="text-5xl md:text-6xl font-bold text-red-500 bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-red-600 mb-4">
-                    DP-PLUGINS
-                </h1>
+            <div class="w-full h-auto mx-auto bg-black/50 rounded-2xl p-8 text-center">
+                <img src="assets/img/logo_white.png" alt="DP-PLUGINS" class="mx-auto mb-6 h-auto w-128">
                 <p id="main-subtitle" class="text-xl text-white/80 max-w-2xl mx-auto mb-8">
                     마인크래프트 서버를 위한 심플한 "무료" 플러그인들을 소개합니다
                 </p>
-                <a id="main-btn" href="#plugins"
-                    class="inline-block bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-3 rounded-full hover:from-red-600 hover:to-red-700 transition-all duration-300"
-                    onclick="smoothScrollToPlugins()">
-                    플러그인 목록보기
-                </a>
             </div>
         </div>
     </header>
 
     <!-- 플러그인 섹션 -->
-    <section class="plugins-section py-16 bg-[#222831]">
+    <section class="plugins-section py-6 bg-[#222831]">
         <div class="container mx-auto px-4">
-            <h2 id="plugins-section-title" class="text-3xl md:text-4xl font-bold text-red-500 text-center mb-12">
+            <h2 id="plugins-section-title" class="text-3xl md:text-4xl font-bold text-white text-center mb-12">
                 플러그인 목록
             </h2>
             <div class="relative w-full md:w-1/2 mx-auto mb-8 flex items-center"

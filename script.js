@@ -25,21 +25,28 @@ const pluginDescriptions = {
     'DP-RandomBox': '심플한 랜덤박스 플러그인 입니다.<br>랜덤박스 쿠폰, GUI 설정.'
 };
 
-
 // 플러그인 데이터 가져오기
 async function fetchPluginData() {
     try {
         const plugins = [];
         
         for (const pluginName of pluginsList) {
-            let response = await fetch(`https://raw.githubusercontent.com/darksoldier1404/${pluginName}/refs/heads/master/src/main/resources/plugin.yml`);
+            let response;
             if(pluginName === 'DPP-Core') {
                 response = await fetch(`https://raw.githubusercontent.com/darksoldier1404/DPP-Core/refs/heads/master/common/src/main/resources/plugin.yml`);
+            }else{
+                response = await fetch(`https://raw.githubusercontent.com/darksoldier1404/${pluginName}/refs/heads/master/src/main/resources/plugin.yml`);
             }
             if (response.ok) {
                 const yamlText = await response.text();
                 const lines = yamlText.split('\n');
-                const plugin = {};
+                const plugin = {
+                    name: pluginName,
+                    icon: pluginIcons[pluginName],
+                    supportVersion: pluginSupportVersions[pluginName],
+                    description: pluginDescriptions[pluginName],
+                    imglist: getPluginImages(pluginName)
+                };
                 
                 for (const line of lines) {
                     const match = line.match(/^(\w+):\s*(.*)$/);
@@ -51,10 +58,11 @@ async function fetchPluginData() {
                 plugins.push({
                     name: plugin.name,
                     version: plugin.version,
-                    description: pluginDescriptions[pluginName] || '설명 준비중 입니다.',
+                    description: plugin.description,
                     downloadUrl: `https://github.com/darksoldier1404/${pluginName}/releases`,
-                    imageUrl: pluginIcons[pluginName],
-                    supportVersion: pluginSupportVersions[pluginName]
+                    imageUrl: plugin.icon,
+                    supportVersion: plugin.supportVersion,
+                    imglist: plugin.imglist
                 });
             }
         }
@@ -66,34 +74,52 @@ async function fetchPluginData() {
     }
 }
 
+// Function to get plugin images dynamically
+function getPluginImages(pluginName) {
+    // Define image paths based on plugin name
+    const images = [];
+    
+    // Set the base path for screenshots
+    const basePath = `assets/img/screenshot/${pluginName}`;
+    
+    // Define number of screenshots per plugin
+    const screenshotCounts = {
+        'DP-SimplePrefix': 2
+    };
+    
+    // Get the number of screenshots for this plugin
+    const count = screenshotCounts[pluginName] || 1;
+    
+    // Generate image paths
+    for (let i = 1; i <= count; i++) {
+        images.push(`${basePath}/${i}.jpg`);
+    }
+    
+    return images;
+}
+
 // 플러그인 카드 생성 함수
 function createPluginCard(plugin) {
     return `
-        <div class="plugin-card group relative bg-gradient-to-br from-black/90 via-black/80 to-red-900/80 rounded-2xl p-7 shadow-2xl border border-red-700/30 hover:scale-[1.03] hover:shadow-red-700/40 transition-all duration-300 flex flex-col h-full overflow-hidden backdrop-blur">
+        <a href="plugin.html?plugin=${encodeURIComponent(plugin.name)}" class="plugin-card group relative bg-gradient-to-br from-black/90 via-black/80 to-red-900/80 rounded-2xl p-6 shadow-2xl border border-red-700/30 hover:scale-[1.03] hover:shadow-red-700/40 transition-all duration-300 flex flex-col h-[200px] overflow-hidden backdrop-blur cursor-pointer">
             <div class="absolute right-4 top-4">
-                <span class="inline-block bg-green-700/90 text-white text-sm font-bold px-3 py-1 rounded-full shadow">MC ${plugin.supportVersion}</span>
-                <span class="inline-block bg-blue-500/90 text-white text-sm font-bold px-3 py-1 rounded-full shadow">v${plugin.version}</span>
+                <span class="inline-block bg-green-700/90 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow">MC ${plugin.supportVersion}</span>
+                <span class="inline-block bg-blue-500/90 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow">v${plugin.version || '1.0.0'}</span>
             </div>
-            <div class="flex items-center gap-5 mb-2">
-                <img src="${plugin.imageUrl ? plugin.imageUrl : 'assets/img/default.png'}" alt="${plugin.name} 아이콘" width="64" height="64" class="rounded-xl object-cover border border-white/10 shadow" style="min-width:64px;min-height:64px;max-width:64px;max-height:64px;" loading="lazy">
-                <h3 class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-red-500 to-yellow-500 drop-shadow-lg m-0">
+            <div class="flex items-center gap-4 mt-2 mb-2">
+                <img src="${plugin.imageUrl || 'assets/img/default.png'}" alt="${plugin.name} 아이콘" width="56" height="56" class="rounded-xl object-cover border border-white/10 shadow" style="min-width:56px;min-height:56px;max-width:56px;max-height:56px;" loading="lazy">
+                <h3 class="text-xl font-extrabold text-white drop-shadow-lg m-0">
                     ${plugin.name}
                 </h3>
             </div>
-            <p class="text-white/80 text-base mb-4 line-clamp-3 min-h-[60px]">${plugin.description}</p>
-            <div class="flex-1"></div>
-            <div class="flex flex-col md:flex-row gap-3 mt-6 w-full justify-center items-center">
-                <a href="${plugin.downloadUrl}" target="_blank" rel="noopener noreferrer"
-                    class="w-full md:w-48 px-0 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold py-3 rounded-full shadow-lg hover:from-red-600 hover:to-yellow-500 hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-400 text-center">
-                    <i class="fas fa-download"></i>
-                    ${langData.modal_download}
-                </a>
-                <button class="plugin-detail-btn w-full md:w-48 px-0 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-gray-700 to-black text-white font-semibold py-3 rounded-full shadow hover:from-gray-800 hover:to-red-800 hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-400 text-center" data-plugin="${plugin.name}">
-                    <i class="fas fa-info-circle"></i>
-                    ${langData.modal_detail}
-                </button>
+            <p class="text-white/80 text-sm mb-4 line-clamp-3 min-h-[54px]">${plugin.description || ''}</p>
+            <div class="mt-auto text-right">
+                <span class="text-red-400 text-sm font-medium inline-flex items-center">
+                    ${langData.view_details || '상세 보기'}
+                    <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                </span>
             </div>
-        </div>
+        </a>
     `;
 }
 
@@ -160,8 +186,8 @@ function showPluginModal(plugin) {
             <div class="w-full text-white/90 text-base mb-2 text-center">${plugin.description}</div>
             <div class="w-full mb-2">
                 <h3 class="text-lg font-bold text-white/80 mb-1 flex items-center gap-1"><i class='fas fa-image text-red-400'></i> ${langData.modal_screenshot}</h3>
-                <div class="w-full flex justify-center items-center rounded-lg bg-black/30 p-2 min-h-[80px]">
-                    <span class="text-white/50 text-sm">${langData.modal_screenshot_ready}</span>
+                <div class="w-full flex flex-col justify-center items-center rounded-lg bg-black/30 p-2 min-h-[80px]">
+                    ${plugin.imglist && plugin.imglist.length > 0 ? plugin.imglist.map((imgUrl, index) => `<div style="width: 100%; margin-bottom: 10px; cursor: pointer;" onclick="openImageLightbox('${imgUrl}')"><img src="${imgUrl}" alt="${plugin.name}" style="max-width: 100%; max-height: 300px; border: 1px solid #ffffff33; border-radius: 4px;"></div>`).join('') : '<p>No images available</p>'}
                 </div>
             </div>
             <div class="w-full mb-2">
@@ -195,6 +221,54 @@ function showPluginModal(plugin) {
     document.body.classList.add('overflow-hidden');
     const contentWrapper = document.getElementById('plugin-modal-content-wrapper');
     contentWrapper.scrollTo({ top: 0, behavior: 'instant' });
+}
+
+// Function to open image lightbox
+function openImageLightbox(imgSrc) {
+    // Create lightbox elements
+    const lightbox = document.createElement('div');
+    lightbox.style.position = 'fixed';
+    lightbox.style.top = '0';
+    lightbox.style.left = '0';
+    lightbox.style.width = '100%';
+    lightbox.style.height = '100%';
+    lightbox.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+    lightbox.style.display = 'flex';
+    lightbox.style.justifyContent = 'center';
+    lightbox.style.alignItems = 'center';
+    lightbox.style.zIndex = '1000';
+    lightbox.id = 'imageLightbox';
+    
+    const enlargedImg = document.createElement('img');
+    enlargedImg.src = imgSrc;
+    enlargedImg.style.maxWidth = '90%';
+    enlargedImg.style.maxHeight = '90%';
+    enlargedImg.style.cursor = 'pointer';
+    
+    const closeBtn = document.createElement('span');
+    closeBtn.innerHTML = '&times;';
+    closeBtn.style.position = 'absolute';
+    closeBtn.style.top = '20px';
+    closeBtn.style.right = '30px';
+    closeBtn.style.color = 'white';
+    closeBtn.style.fontSize = '40px';
+    closeBtn.style.cursor = 'pointer';
+    
+    // Close lightbox on click
+    closeBtn.onclick = function() {
+        document.body.removeChild(lightbox);
+    };
+    
+    // Close lightbox when clicking outside image or on image
+    lightbox.onclick = function(e) {
+        if (e.target === lightbox || e.target === enlargedImg) {
+            document.body.removeChild(lightbox);
+        }
+    };
+    
+    lightbox.appendChild(enlargedImg);
+    lightbox.appendChild(closeBtn);
+    document.body.appendChild(lightbox);
 }
 
 // 모달 스크롤 활성화
@@ -265,56 +339,11 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// 다크/라이트 모드 토글
-let isDarkMode = true;
-
-// 다크 모드 초기화
-function initializeDarkMode() {
-    const savedMode = localStorage.getItem('darkMode');
-    if (savedMode !== null) {
-        isDarkMode = savedMode === 'true';
-        updateTheme();
-    }
-}
-
-// 테마 업데이트
-function updateTheme() {
-    document.body.classList.toggle('dark', isDarkMode);
-    document.body.classList.toggle('light', !isDarkMode);
-    localStorage.setItem('darkMode', isDarkMode);
-    
-    // Tailwind 클래스 업데이트
-    const themeToggle = document.querySelector('.theme-toggle i');
-    if (isDarkMode) {
-        themeToggle.classList.remove('fa-sun');
-        themeToggle.classList.add('fa-moon');
-        themeToggle.classList.add('text-white/80');
-        themeToggle.classList.remove('text-black/80');
-    } else {
-        themeToggle.classList.remove('fa-moon');
-        themeToggle.classList.add('fa-sun');
-        themeToggle.classList.add('text-black/80');
-        themeToggle.classList.remove('text-white/80');
-    }
-}
-
-// 다크 모드 토글 이벤트
-function toggleDarkMode() {
-    isDarkMode = !isDarkMode;
-    updateTheme();
-}
-
-// 부드러운 스크롤 함수
-function smoothScrollToPlugins() {
-    const pluginsSection = document.getElementById('plugins-container');
-    if (pluginsSection) {
-        pluginsSection.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-        });
-        return false; // 기본 링크 동작 막기
-    }
-    return true;
+// 다크모드 강제 설정
+function forceDarkMode() {
+    document.body.classList.add('dark');
+    document.body.classList.remove('light');
+    document.documentElement.style.colorScheme = 'dark';
 }
 
 // 메인 실행 함수

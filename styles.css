@@ -62,8 +62,30 @@ input#search-input::placeholder {
     transition: min-height 0.3s, gap 0.3s;
     gap: 2rem;
 }
-.plugin-card, .plugin-card:hover {
-    transition: none !important;
+.plugin-card {
+    transition: all 0.3s ease !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.plugin-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,0,0,0.1) 0%, rgba(0,0,0,0) 50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.plugin-card:hover::before {
+    opacity: 1;
+}
+
+.plugin-card:active {
+    transform: scale(0.98) !important;
 }
 input#search-input:focus {
     border: 2.5px solid #ff0000;
