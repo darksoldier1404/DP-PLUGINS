@@ -1,0 +1,75 @@
+{
+    "plugins": [
+        {
+            "name": "DPP-Core",
+            "description": {
+                "ko": "모든 DP-PLUGINS 플러그인을 위한<br>필수 API 플러그인입니다.",
+                "en": "All DP-PLUGINS plugins require this plugin."
+            },
+            "pluginIcon": "assets/img/icon/core.png",
+            "supportVersion": "1.14-1.21.5",
+            "pluginImgList": [],
+            "dependencies": {
+                "required": [],
+                "recommended": [
+                    "EssentialsX",
+                    "LuckPerms",
+                    "PlaceholderAPI",
+                    "WorldGuard"
+                ]
+            }
+        },
+        {
+            "name": "DP-Shop",
+            "description": {
+                "ko": "심플한 상점 플러그인 입니다.<br>간편한 상점 설정 지원.",
+                "en": "Simple shop plugin. Easy shop setup support."
+            },
+            "pluginIcon": "assets/img/icon/emerald.png",
+            "supportVersion": "1.14-1.21.5",
+            "pluginImgList": [],
+            "dependencies": {
+                "required": [
+                    "DPP-Core",
+                    "EssentialsX"
+                ],
+                "recommended": []
+            }
+        },
+        {
+            "name": "DP-SimplePrefix",
+            "description": {
+                "ko": "심플한 칭호 플러그인 입니다.<br>칭호 목록, 장착 GUI 지원.",
+                "en": "Simple prefix plugin. Prefix list, GUI support."
+            },
+            "pluginIcon": "assets/img/icon/tag.png",
+            "supportVersion": "1.14-1.21.5",
+            "pluginImgList": [
+                "assets/img/screenshot/DP-SimplePrefix/1.jpg",
+                "assets/img/screenshot/DP-SimplePrefix/2.jpg"
+            ],
+            "dependencies": {
+                "required": [
+                    "DPP-Core"
+                ],
+                "recommended": []
+            }
+        },
+        {
+            "name": "DP-RandomBox",
+            "description": {
+                "ko": "심플한 랜덤박스 플러그인 입니다.<br>랜덤박스 쿠폰, GUI 설정.",
+                "en": "Simple random box plugin. Random box coupon, GUI support."
+            },
+            "pluginIcon": "assets/img/icon/red_bundle.png",
+            "supportVersion": "1.14-1.21.5",
+            "pluginImgList": [],
+            "dependencies": {
+                "required": [
+                    "DPP-Core"
+                ],
+                "recommended": []
+            }
+        }
+    ]
+}
