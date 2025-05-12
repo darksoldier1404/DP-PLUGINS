@@ -102,58 +102,6 @@ async function updatePluginsSection(plugins, filterValue = '') {
     }, 120);
 }
 
-function showPluginModal(plugin) {
-    const overlay = document.getElementById('plugin-modal-overlay');
-    const content = document.getElementById('plugin-modal-content');
-    if (!overlay || !content) return;
-
-    content.innerHTML = `
-        <div class="flex flex-col items-center gap-4">
-            <img src="${plugin.imageUrl || 'assets/img/default.png'}" alt="${plugin.name} 아이콘" width="96" height="96" class="rounded-xl object-cover border border-white/10 shadow mb-2" style="min-width:96px;min-height:96px;max-width:96px;max-height:96px;">
-            <h2 class="text-3xl font-extrabold text-red-400 mb-2">${plugin.name}</h2>
-            <div class="flex gap-2 mb-2">
-                <span class="inline-block bg-green-700/90 text-white text-xs font-bold px-2 py-1 rounded shadow">MC ${plugin.supportVersion}</span>
-                <span class="inline-block bg-blue-500/90 text-white text-xs font-bold px-2 py-1 rounded shadow">v${plugin.version}</span>
-            </div>
-            <div class="w-full text-white/90 text-base mb-2 text-center">${plugin.description}</div>
-            <div class="w-full mb-2">
-                <h3 class="text-lg font-bold text-white/80 mb-1 flex items-center gap-1"><i class='fas fa-image text-red-400'></i> ${langData[currentLang].modal_screenshot}</h3>
-                <div class="w-full flex flex-col justify-center items-center rounded-lg bg-black/30 p-2 min-h-[80px]">
-                    ${plugin.imglist?.length ? plugin.imglist.map((imgUrl, index) => `<div style="width: 100%; margin-bottom: 10px; cursor: pointer;" onclick="openImageLightbox('${imgUrl}')"><img src="${imgUrl}" alt="${plugin.name}" style="max-width: 100%; max-height: 300px; border: 1px solid #ffffff33; border-radius: 4px;"></div>`).join('') : '<p>No images available</p>'}
-                </div>
-            </div>
-            <div class="w-full mb-2">
-                <h3 class="text-lg font-bold text-white/80 mb-1 flex items-center gap-1"><i class='fas fa-cogs text-red-400'></i> ${langData[currentLang].modal_install}</h3>
-                <div class="text-white/70 text-sm bg-black/20 rounded p-2">
-                    <ul class="list-disc pl-5">
-                        <li>${langData[currentLang].modal_download} 버튼을 눌러 플러그인 파일(.jar)을 ${langData[currentLang].modal_download}</li>
-                        <li>마인크래프트 서버의 plugins 폴더에 파일 복사</li>
-                        <li>서버 재시작</li>
-                        <li>${plugin.dependencies?.length ? plugin.dependencies.map(d => d.name).join(', ') : langData[currentLang].modal_none}</li>
-                        <li>${langData[currentLang].modal_update}</li>
-                    </ul>
-                </div>
-            </div>
-            <div class="w-full mb-2">
-                <h3 class="text-lg font-bold text-white/80 mb-1 flex items-center gap-1"><i class='fas fa-history text-red-400'></i> ${langData[currentLang].modal_update_log}</h3>
-                <div class="text-white/70 text-sm bg-black/20 rounded p-2">
-                    <span>${langData[currentLang].modal_update_log_ready}</span>
-                </div>
-            </div>
-            <div class="w-full mb-2">
-                <h3 class="text-lg font-bold text-white/80 mb-1 flex items-center gap-1"><i class='fas fa-link text-red-400'></i> ${langData[currentLang].modal_dependencies}</h3>
-                <div class="text-white/70 text-sm bg-black/20 rounded p-2">
-                    <span>${plugin.dependencies?.length ? plugin.dependencies.map(d => d.name).join(', ') : langData[currentLang].modal_none}</span>
-                </div>
-            </div>
-        </div>
-    `;
-    overlay.classList.remove('hidden');
-    overlay.classList.add('flex');
-    document.body.classList.add('overflow-hidden');
-    document.getElementById('plugin-modal-content-wrapper').scrollTo({ top: 0, behavior: 'instant' });
-}
-
 function openImageLightbox(imgSrc) {
     const lightbox = document.createElement('div');
     lightbox.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); display: flex; justify-content: center; align-items: center; z-index: 1000;';
@@ -356,10 +304,12 @@ async function loadReadme(pluginName) {
             const defaultResponse = await fetch(`https://raw.githubusercontent.com/darksoldier1404/${pluginName}/master/README.md`);
             if (!defaultResponse.ok) throw new Error('No README found');
             
-            const readmeContent = await defaultResponse.text();
+            let readmeContent = await defaultResponse.text();
+            readmeContent = extractLanguageContent(readmeContent, currentLang);
             contentDiv.innerHTML = DOMPurify.sanitize(marked.parse(readmeContent));
         } else {
-            const readmeContent = await response.text();
+            let readmeContent = await response.text();
+            readmeContent = extractLanguageContent(readmeContent, currentLang);
             contentDiv.innerHTML = DOMPurify.sanitize(marked.parse(readmeContent));
         }
         
@@ -376,6 +326,21 @@ async function loadReadme(pluginName) {
                 <p>${errorText}</p>
             </div>`;
     }
+}
+
+// Helper function to extract content for the current language
+function extractLanguageContent(content, lang) {
+    const langTag = lang === 'ko' ? 'korean' : 'english';
+    const regex = new RegExp(`<details>\\s*<summary>${langTag}</summary>([\\s\\S]*?)</details>`, 'i');
+    const match = content.match(regex);
+    
+    if (match && match[1]) {
+        // Return the content inside the matching details tag
+        return match[1].trim();
+    }
+    
+    // If no matching language section found, return the original content
+    return content;
 }
 
 function displayDependencies(dependencies) {
@@ -497,7 +462,6 @@ async function loadLang(lang) {
     }
     
     try {
-        // Load language data if not already loaded
         langData = {
             ko: await kr,
             en: await en

@@ -27,7 +27,10 @@
             },
             "pluginIcon": "assets/img/icon/emerald.png",
             "supportVersion": "1.14-1.21.5",
-            "pluginImgList": [],
+            "pluginImgList": [
+                "assets/img/screenshot/DP-Shop/1.jpg",
+                "assets/img/screenshot/DP-Shop/2.jpg"
+            ],
             "dependencies": {
                 "required": [
                     "DPP-Core",
