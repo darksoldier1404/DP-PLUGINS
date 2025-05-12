@@ -7,14 +7,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css">
-    <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
 </head>
-<body class="dark">
+<body class="bg-[#1a1a1a]">
     <!-- 네비게이션 바 -->
     <nav class="fixed top-0 left-0 right-0 z-50 bg-black/70 backdrop-blur-xs border-b border-red-500/10">
-        <span id="nav-plugins" style="display:none;">플러그인 목록</span>
         <div class="container mx-auto px-4">
             <div class="flex items-center justify-between h-16">
                 <a href="/" class="flex items-center">
@@ -44,7 +42,7 @@
     <main class="container mx-auto px-4 pt-24 pb-16">
         <div class="max-w-4xl mx-auto">
             <!-- 플러그인 헤더 -->
-            <div class="flex flex-col md:flex-row items-start md:items-center border border-white/20 rounded-xl p-6 gap-6 mb-8">
+            <div class="flex flex-col md:flex-row items-start md:items-center bg-black/30 rounded-xl p-6 gap-6 mb-8">
                 <img id="plugin-icon" src="" alt="Plugin Icon" class="w-32 h-32 rounded-xl object-cover border border-white/10 shadow">
                 <div class="flex-1">
                     <div class="flex justify-between items-start mb-2">
@@ -75,7 +73,7 @@
             </div>
 
             <!-- 플러그인 스크린샷 -->
-            <div id="screenshots" class="mb-12">
+            <div id="screenshots" class="mb-6 bg-black/30 rounded-xl p-6">
                 <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
                     <i class="fas fa-image text-red-400"></i> <span data-translate="screenshots">스크린샷</span>
                 </h2>
@@ -95,7 +93,7 @@
              </div>
             
             <!-- 플러그인 목록 -->
-            <div class="mt-12 border border-white/20 rounded-xl p-6">
+            <div class="mt-6 bg-black/30 rounded-xl p-6">
                 <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2">
                     <i class="fas fa-plug text-red-400"></i>
                     <span data-translate="all_plugins">모든 플러그인</span>
@@ -108,7 +106,7 @@
     </main>
 
     <!-- 푸터 -->
-    <footer class="bg-black/80 py-8">
+    <footer class="bg-black/80 py-4">
         <div class="container mx-auto px-4 text-center text-white/60">
             <p>© 2024 DP-PLUGINS. All rights reserved.</p>
         </div>
