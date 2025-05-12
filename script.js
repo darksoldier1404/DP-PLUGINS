@@ -295,22 +295,14 @@ async function loadReadme(pluginName) {
     contentDiv.innerHTML = `<p class="text-white/60 text-center py-8">${loadingText}</p>`;
     
     try {
-        // Try to load localized README first (README_kr.md or README_en.md)
-        const localizedReadme = `README_${currentLang === 'ko' ? 'kr' : 'en'}.md`;
-        const response = await fetch(`https://raw.githubusercontent.com/darksoldier1404/${pluginName}/master/${localizedReadme}`);
+        const response = await fetch(`https://raw.githubusercontent.com/darksoldier1404/${pluginName}/master/README.md`);
         
-        if (!response.ok) {
-            // If localized README not found, try the default README.md
-            const defaultResponse = await fetch(`https://raw.githubusercontent.com/darksoldier1404/${pluginName}/master/README.md`);
-            if (!defaultResponse.ok) throw new Error('No README found');
-            
-            let readmeContent = await defaultResponse.text();
-            readmeContent = extractLanguageContent(readmeContent, currentLang);
-            contentDiv.innerHTML = DOMPurify.sanitize(marked.parse(readmeContent));
-        } else {
+        if (response.ok) {
             let readmeContent = await response.text();
             readmeContent = extractLanguageContent(readmeContent, currentLang);
             contentDiv.innerHTML = DOMPurify.sanitize(marked.parse(readmeContent));
+        } else {
+            contentDiv.innerHTML = `<p class="text-white/60 text-center py-8">${errorText}</p>`;
         }
         
         // Add styling to markdown content
