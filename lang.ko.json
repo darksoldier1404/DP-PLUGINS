@@ -29,5 +29,22 @@
   "statistics": "플러그인 통계",
   "no_stats": "통계를 불러올 수 없습니다.",
   "all_plugins": "모든 플러그인",
-  "footer_copyright": "© 2024 DP-PLUGINS. 모든 권리 보유."
+  "footer_copyright": "© 2024 DP-PLUGINS. 모든 권리 보유.",
+  "server_list": "서버 목록",
+  "home": "홈",
+  "server_list_title": "마인크래프트 서버 목록",
+  "server_list_subtitle": "실시간으로 마인크래프트 서버 상태 확인하기",
+  "search_servers_placeholder": "서버 검색...",
+  "loading_servers": "서버 목록을 불러오는 중...",
+  "loading_servers_subtitle": "잠시만 기다려주세요",
+  "online": "온라인",
+  "offline": "오프라인",
+  "players": "플레이어",
+  "version": "버전",
+  "copy_address": "주소 복사",
+  "copied": "복사됨!",
+  "last_updated": "마지막 업데이트",
+  "no_servers_found": "온라인인 서버가 없습니다.",
+  "korean": "한국어",
+  "english": "English"
 }

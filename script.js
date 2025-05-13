@@ -474,7 +474,7 @@ async function applyLang() {
     const data = await langData[currentLang];
     
     const map = [
-        ['lang-toggle-text', currentLang === 'ko' ? '한국어' : 'English'],
+        ['lang-toggle-text', currentLang === 'ko' ? 'English' : '한국어'],
         ['main-subtitle', data?.main_subtitle || ''],
         ['plugins-section-title', data?.plugins_section_title || ''],
         ['search-input', data?.search_placeholder || '', 'placeholder']
@@ -497,6 +497,40 @@ async function applyLang() {
         }
     });
     
+    // Update all elements with data-i18n attribute
+    const i18nElements = document.querySelectorAll('[data-i18n]');
+    i18nElements.forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (data && data[key]) {
+            el.textContent = data[key];
+        }
+    });
+    
+    // Update navigation text
+    const navHome = document.querySelector('a[data-i18n="home"]');
+    const navServerList = document.querySelector('a[data-i18n="server_list"]');
+    
+    if (navHome && data?.home) {
+        navHome.textContent = data.home;
+    }
+    
+    if (navServerList && data?.server_list) {
+        navServerList.textContent = data.server_list;
+    }
+    
+    // Update language toggle button text to show the opposite language
+    const langToggleText = document.getElementById('lang-toggle-text');
+    if (langToggleText && data) {
+        // Show the opposite language name (if current is Korean, show 'English' and vice versa)
+        langToggleText.textContent = currentLang === 'ko' ? data.english : data.korean;
+    }
+    
+    // Update page title
+    const pageTitle = document.querySelector('title[data-i18n]');
+    if (pageTitle && data?.site_title) {
+        pageTitle.textContent = data.site_title;
+    }
+    
     // Load README if on plugin page
     if (window.location.pathname.endsWith('plugin.html')) {
         const urlParams = new URLSearchParams(window.location.search);
@@ -510,9 +544,28 @@ async function applyLang() {
 async function main() {
     forceDarkMode();
     await loadLang(currentLang);
+    
+    // Initialize server list if on server list page
+    if (window.location.pathname.endsWith('server-list.html')) {
+        window.serverListManager = new ServerListManager();
+        
+        // Add search functionality
+        const searchInput = document.getElementById('server-search');
+        if (searchInput) {
+            searchInput.addEventListener('input', () => {
+                if (window.serverListManager) {
+                    window.serverListManager.renderServers();
+                }
+            });
+        }
+        return;
+    }
+    
+    // Handle plugin pages
     const plugins = await fetchPluginData();
     allPlugins = plugins;
     const isPluginPage = window.location.pathname.includes('plugin.html');
+    
     if (isPluginPage) {
         await loadPluginInfo(allPlugins);
         await updatePluginsSection(allPlugins);
@@ -566,4 +619,833 @@ document.getElementById('lang-toggle-btn')?.addEventListener('click', () => {
     updatePluginsSection(allPlugins, document.getElementById('search-input')?.value || '');
 });
 
-document.addEventListener('DOMContentLoaded', main);
+// Server List Manager Class
+class ServerListManager {
+    constructor() {
+        this.servers = [];
+        this.serverListElement = document.getElementById('server-list');
+        this.loadingElement = document.querySelector('.loading');
+        this.pageInfoElement = document.getElementById('page-info');
+        this.paginationElement = document.querySelector('.pagination');
+        this.currentPage = 1;
+        this.serversPerPage = 10;
+        this.filteredServers = [];
+        this.onlineServers = [];
+        this.offlineServers = [];
+        
+        if (this.serverListElement) {
+            this.initCopyButtons();
+            this.initPagination();
+            this.init();
+        }
+    }
+
+    // Initialize the server list manager
+    init() {
+        this.loadServers();
+        
+        // Add event listener for search input
+        const searchInput = document.getElementById('server-search');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                this.handleSearch(e.target.value);
+            });
+        }
+        
+        // Initialize pagination
+        this.initPagination();
+    }
+
+    // Handle search input
+    handleSearch(searchTerm) {
+        if (!searchTerm) {
+            // If search is cleared, show all servers with online first
+            this.filteredServers = [...this.onlineServers, ...this.offlineServers];
+        } else {
+            // Filter servers based on search term (case-insensitive)
+            const term = searchTerm.toLowerCase();
+            const filteredOnline = this.onlineServers.filter(server => this.serverMatchesSearch(server, term));
+            const filteredOffline = this.offlineServers.filter(server => this.serverMatchesSearch(server, term));
+            this.filteredServers = [...filteredOnline, ...filteredOffline];
+        }
+        
+        // Reset to first page and update the display
+        this.currentPage = 1;
+        this.updateServerList();
+    }
+
+    // Initialize pagination controls
+    initPagination() {
+        // Remove any existing event listeners first to prevent duplicates
+        const firstPageBtn = document.getElementById('first-page');
+        const prevPageBtn = document.getElementById('prev-page');
+        const nextPageBtn = document.getElementById('next-page');
+        const lastPageBtn = document.getElementById('last-page');
+        
+        // Clone and replace buttons to remove old event listeners
+        const replaceButton = (btn) => {
+            if (!btn) return null;
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+            return newBtn;
+        };
+        
+        const newFirstBtn = replaceButton(firstPageBtn);
+        const newPrevBtn = replaceButton(prevPageBtn);
+        const newNextBtn = replaceButton(nextPageBtn);
+        const newLastBtn = replaceButton(lastPageBtn);
+        
+        // Add new event listeners
+        if (newFirstBtn) {
+            newFirstBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.changePage(1);
+            });
+        }
+        
+        if (newPrevBtn) {
+            newPrevBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.changePage(Math.max(1, this.currentPage - 1));
+            });
+        }
+        
+        if (newNextBtn) {
+            newNextBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const totalPages = Math.max(1, Math.ceil(this.filteredServers.length / this.serversPerPage));
+                this.changePage(Math.min(totalPages, this.currentPage + 1));
+            });
+        }
+        
+        if (newLastBtn) {
+            newLastBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const totalPages = Math.max(1, Math.ceil(this.filteredServers.length / this.serversPerPage));
+                this.changePage(totalPages);
+            });
+        }
+        
+        // Update button states
+        this.updatePagination();
+    }
+
+    // Update pagination controls and info
+    updatePagination() {
+        const totalPages = Math.max(1, Math.ceil(this.filteredServers.length / this.serversPerPage));
+        
+        // Ensure current page is within bounds
+        if (this.currentPage > totalPages && totalPages > 0) {
+            this.currentPage = totalPages;
+        } else if (this.currentPage < 1) {
+            this.currentPage = 1;
+        }
+
+        // Get button elements
+        const firstPageBtn = document.getElementById('first-page');
+        const prevPageBtn = document.getElementById('prev-page');
+        const nextPageBtn = document.getElementById('next-page');
+        const lastPageBtn = document.getElementById('last-page');
+        const pageNumbers = document.getElementById('page-numbers');
+
+        // Update button states
+        const isFirstPage = this.currentPage <= 1;
+        const isLastPage = this.currentPage >= totalPages || totalPages === 0;
+        
+        if (firstPageBtn) firstPageBtn.disabled = isFirstPage;
+        if (prevPageBtn) prevPageBtn.disabled = isFirstPage;
+        if (nextPageBtn) nextPageBtn.disabled = isLastPage;
+        if (lastPageBtn) lastPageBtn.disabled = isLastPage;
+
+        // Update page numbers display
+        if (pageNumbers) {
+            pageNumbers.textContent = totalPages > 0 ? `${this.currentPage} / ${totalPages}` : '0 / 0';
+        }
+        
+        // Update page info
+        this.updatePageInfo();
+    }
+    
+    // Update URL hash to reflect current page
+    updateUrlHash() {
+        if (history.pushState) {
+            const url = window.location.pathname + (this.currentPage > 1 ? `#page=${this.currentPage}` : '');
+            window.history.replaceState({}, '', url);
+        }
+    }
+
+    // Update pagination info display
+    updatePageInfo() {
+        if (!this.pageInfoElement) return;
+
+        const totalServers = this.filteredServers.length;
+        if (totalServers === 0) {
+            this.pageInfoElement.textContent = currentLang === 'ko' ?
+                '서버를 찾을 수 없습니다' : 'No servers found';
+            return;
+        }
+
+        const start = (this.currentPage - 1) * this.serversPerPage + 1;
+        const end = Math.min(start + this.serversPerPage - 1, totalServers);
+
+        if (currentLang === 'ko') {
+            this.pageInfoElement.innerHTML = `
+                <span class="font-medium">${start}</span> - 
+                <span class="font-medium">${end}</span> / 
+                <span class="font-medium">${totalServers}</span>개 서버`;
+        } else {
+            this.pageInfoElement.innerHTML = `
+                <span class="font-medium">${start}</span> - 
+                <span class="font-medium">${end}</span> of 
+                <span class="font-medium">${totalServers}</span> servers`;
+        }
+        
+        // Ensure the page info is visible
+        this.pageInfoElement.style.display = 'block';
+    }
+
+    // Change to a specific page
+    changePage(page) {
+        const totalPages = Math.max(1, Math.ceil(this.filteredServers.length / this.serversPerPage));
+        const newPage = Math.max(1, Math.min(page, totalPages));
+        
+        // Only update if page actually changed
+        if (newPage !== this.currentPage) {
+            this.currentPage = newPage;
+            
+            // Update the UI
+            this.updateServerList();
+            
+            // Update pagination controls
+            this.updatePagination();
+            
+            // Scroll to top of server list for better UX
+            if (this.serverListElement) {
+                this.serverListElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            
+            // Update URL hash for deep linking
+            this.updateUrlHash();
+        }
+    }
+
+    // Get servers for the current page
+    getCurrentPageServers() {
+        const start = (this.currentPage - 1) * this.serversPerPage;
+        const end = start + this.serversPerPage;
+        return this.filteredServers.slice(start, end);
+    }
+
+    // Render pagination controls
+    renderPagination() {
+        const totalPages = Math.ceil(this.filteredServers.length / this.serversPerPage) || 1;
+        const paginationElement = document.getElementById('pagination');
+        const prevBtn = document.getElementById('prev-page');
+        const nextBtn = document.getElementById('next-page');
+        const firstPageBtn = document.getElementById('first-page');
+        const lastPageBtn = document.getElementById('last-page');
+
+        // Hide pagination if only one page
+        if (totalPages <= 1) {
+            if (paginationElement) paginationElement.innerHTML = '';
+            if (prevBtn) prevBtn.style.display = 'none';
+            if (nextBtn) nextBtn.style.display = 'none';
+            if (firstPageBtn) firstPageBtn.style.display = 'none';
+            if (lastPageBtn) lastPageBtn.style.display = 'none';
+            return;
+        }
+
+        // Show navigation buttons
+        const showNavButtons = (btn, condition) => {
+            if (btn) {
+                btn.style.display = 'flex';
+                btn.disabled = condition;
+                btn.classList.toggle('opacity-50', condition);
+                btn.classList.toggle('cursor-not-allowed', condition);
+            }
+        };
+
+        showNavButtons(prevBtn, this.currentPage <= 1);
+        showNavButtons(nextBtn, this.currentPage >= totalPages);
+        showNavButtons(firstPageBtn, this.currentPage === 1);
+        showNavButtons(lastPageBtn, this.currentPage === totalPages);
+
+        // Calculate page range to show (always show 5 page buttons if possible)
+        const maxPagesToShow = 5;
+        let startPage, endPage;
+
+        if (totalPages <= maxPagesToShow) {
+            // Less than max pages to show, show all pages
+            startPage = 1;
+            endPage = totalPages;
+        } else {
+            // Calculate start and end pages to show
+            startPage = Math.max(1, this.currentPage - Math.floor(maxPagesToShow / 2));
+            endPage = startPage + maxPagesToShow - 1;
+
+            if (endPage > totalPages) {
+                endPage = totalPages;
+                startPage = Math.max(1, endPage - maxPagesToShow + 1);
+            }
+        }
+
+        // Build pagination HTML
+        let paginationHTML = '';
+
+        // Add ellipsis if needed before
+        if (startPage > 1) {
+            paginationHTML += `
+                <span class="px-2 text-gray-400">...</span>`;
+        }
+
+        // Add page numbers
+        for (let i = startPage; i <= endPage; i++) {
+            const isActive = i === this.currentPage;
+            paginationHTML += `
+                <button class="page-btn w-10 h-8 flex items-center justify-center text-sm font-medium border-t border-b border-gray-700 ${
+                isActive
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700 border-gray-700'
+                } transition-colors duration-200" 
+                        data-page="${i}">
+                    ${i}
+                </button>`;
+        }
+
+        // Add ellipsis if needed after
+        if (endPage < totalPages) {
+            paginationHTML += `
+                <span class="px-2 text-gray-400">...</span>`;
+        }
+
+        // Update the DOM
+        if (paginationElement) {
+            paginationElement.innerHTML = paginationHTML;
+        }
+
+        // Add event listeners
+        const self = this;
+
+        // Helper function to change page
+        const changePage = (page) => {
+            if (page >= 1 && page <= totalPages && page !== self.currentPage) {
+                self.currentPage = page;
+                self.updatePagination();
+                self.renderServers();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        };
+
+        // Page number buttons
+        if (paginationElement) {
+            const pageBtns = paginationElement.querySelectorAll('.page-btn');
+            pageBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const page = parseInt(btn.getAttribute('data-page'));
+                    changePage(page);
+                });
+            });
+        }
+
+        // Navigation buttons
+        if (prevBtn) {
+            prevBtn.onclick = (e) => {
+                e.preventDefault();
+                changePage(self.currentPage - 1);
+            };
+        }
+
+        if (nextBtn) {
+            nextBtn.onclick = (e) => {
+                e.preventDefault();
+                changePage(self.currentPage + 1);
+            };
+        }
+
+        // First/Last page buttons
+        if (firstPageBtn) {
+            firstPageBtn.onclick = (e) => {
+                e.preventDefault();
+                changePage(1);
+            };
+        }
+
+        if (lastPageBtn) {
+            lastPageBtn.onclick = (e) => {
+                e.preventDefault();
+                changePage(totalPages);
+            };
+        }
+    }
+
+    // Initialize event listeners for copy buttons
+    initCopyButtons() {
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.copy-address-btn');
+            if (!btn) return;
+
+            const address = btn.getAttribute('data-copy-address');
+            const successElement = btn.querySelector('.copy-success');
+
+            // Function to reset success element to default state
+            const resetSuccessElement = () => {
+                if (successElement) {
+                    successElement.innerHTML = `
+                        <i class="fas fa-check mr-1.5"></i>
+                        <span data-i18n="copied">Copied!</span>
+                    `;
+                    successElement.classList.remove('bg-red-600/90');
+                    successElement.classList.add('bg-green-600/90');
+                }
+            };
+
+            // Function to show success message
+            const showSuccess = () => {
+                if (successElement) {
+                    successElement.classList.remove('opacity-0');
+                    successElement.classList.add('opacity-100');
+
+                    // Re-apply translations
+                    if (window.applyLang) {
+                        window.applyLang();
+                    }
+
+                    // Hide after delay
+                    setTimeout(() => {
+                        if (successElement) {
+                            successElement.classList.remove('opacity-100');
+                            successElement.classList.add('opacity-0');
+                        }
+                    }, 2000);
+                }
+            };
+
+            // Function to show error
+            const showError = () => {
+                if (successElement) {
+                    successElement.innerHTML = `
+                        <i class="fas fa-times mr-1.5"></i>
+                        <span data-i18n="copy_failed">Failed to copy</span>
+                    `;
+                    successElement.classList.remove('opacity-0', 'bg-green-600/90');
+                    successElement.classList.add('opacity-100', 'bg-red-600/90');
+
+                    if (window.applyLang) {
+                        window.applyLang();
+                    }
+
+                    // Reset after delay
+                    setTimeout(() => {
+                        if (successElement) {
+                            successElement.classList.remove('opacity-100');
+                            successElement.classList.add('opacity-0');
+                            setTimeout(resetSuccessElement, 300);
+                        }
+                    }, 2000);
+                }
+            };
+
+            // Execute copy and handle result
+            navigator.clipboard.writeText(address)
+                .then(() => {
+                    resetSuccessElement();
+                    showSuccess();
+                })
+                .catch(err => {
+                    console.error('Failed to copy:', err);
+                    showError();
+                });
+        });
+    }
+
+    // Load servers from the JSON file
+    async loadServers() {
+        try {
+            this.showLoading(true);
+            
+            // Load servers from the JSON file
+            const response = await fetch('https://raw.githubusercontent.com/darksoldier1404/DPP-ServerStatus/refs/heads/main/data/output.json');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const serverList = await response.json();
+            
+            // Transform server data to match our expected format
+            this.servers = serverList.map(serverData => ({
+                domain: serverData.host,
+                name: serverData.host,
+                host: serverData.host,
+                port: serverData.port || 25565,
+                status: {
+                    online: serverData.online || false,
+                    players: {
+                        online: serverData.players?.online || 0,
+                        max: serverData.players?.max || 0,
+                        list: serverData.players?.list || []
+                    },
+                    version: {
+                        name: serverData.version?.name_clean || 'Unknown',
+                        name_clean: serverData.version?.name_clean || 'Unknown',
+                        name_raw: serverData.version?.name_raw || '',
+                        protocol: serverData.version?.protocol || 0
+                    },
+                    motd: {
+                        clean: serverData.motd?.clean || '',
+                        html: serverData.motd?.html || ''
+                    },
+                    icon: serverData.icon || null,
+                    host: serverData.host,
+                    port: serverData.port || 25565
+                },
+                error: serverData.eula_blocked ? 'EULA Blocked' : null,
+                loading: false
+            }));
+            
+            // Sort servers: online first, then by player count (descending)
+            this.servers.sort((a, b) => {
+                // Online servers first
+                if (a.status?.online !== b.status?.online) {
+                    return b.status?.online ? 1 : -1;
+                }
+                
+                // Then sort by player count (descending)
+                const aPlayers = a.status?.players?.online || 0;
+                const bPlayers = b.status?.players?.online || 0;
+                return bPlayers - aPlayers;
+            });
+            
+            // Separate online and offline servers
+            this.onlineServers = this.servers.filter(server => server.status?.online);
+            this.offlineServers = this.servers.filter(server => !server.status?.online);
+            
+            // Combine with online servers first
+            this.filteredServers = [...this.onlineServers, ...this.offlineServers];
+            
+            // Reset to first page and update the display
+            this.currentPage = 1;
+            this.updateServerList();
+            
+        } catch (error) {
+            console.error('Failed to load servers:', error);
+            this.showError(currentLang === 'ko' ? '서버 목록을 불러오는 중 오류가 발생했습니다.' : 'Failed to load server list.');
+        } finally {
+            this.showLoading(false);
+        }
+    }
+
+    // Update server list display
+    updateServerList() {
+        if (!this.serverListElement) return;
+        
+        // Always update filtered servers to maintain correct order
+        this.filteredServers = [...this.onlineServers, ...this.offlineServers];
+        const totalPages = Math.max(1, Math.ceil(this.filteredServers.length / this.serversPerPage));
+        
+        // Ensure current page is within valid range
+        if (this.currentPage > totalPages) {
+            this.currentPage = totalPages > 0 ? totalPages : 1;
+        } else if (this.currentPage < 1) {
+            this.currentPage = 1;
+        }
+        
+        // Get servers for current page
+        const currentPageServers = this.getCurrentPageServers();
+        
+        // Show empty state if no servers
+        if (currentPageServers.length === 0) {
+            this.showEmptyState();
+            return;
+        }
+        
+        // Render the servers for the current page
+        const serverCards = currentPageServers.map(server => this.createServerCard(server)).join('');
+        this.serverListElement.innerHTML = serverCards;
+        
+        // Update pagination controls
+        this.updatePagination();
+        
+        // Re-initialize copy buttons for the new server cards
+        this.initCopyButtons();
+    }
+
+    // Create a server card element
+    createServerCard(server) {
+        const isOnline = server.status?.online;
+        const playerCount = server.status?.players?.online || 0;
+        const maxPlayers = server.status?.players?.max || 0;
+        const version = server.status?.version?.name_clean || 
+                      server.status?.version?.name_raw || 
+                      server.status?.version?.name || 
+                      'Unknown';
+        const motd = server.status?.motd?.clean || '';
+        const host = server.domain || server.host || 'Unknown';
+        const port = server.port || server.status?.port || 25565;
+        const address = port !== 25565 ? `${host}:${port}` : host;
+        const favicon = server.status?.icon || '';
+        const playerList = server.status?.players?.list || [];
+        
+        // Generate server status badge with animation
+        const statusBadge = isOnline
+            ? `
+                <div class="flex items-center">
+                    <span class="relative flex h-3 w-3 mr-1.5">
+                        <span class="server-online-indicator absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                    </span>
+                    <span class="text-green-400 text-sm font-medium">${currentLang === 'ko' ? '온라인' : 'Online'}</span>
+                </div>
+            `
+            : `
+                <div class="flex items-center">
+                    <span class="relative flex h-3 w-3 mr-1.5">
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                    </span>
+                    <span class="text-red-400 text-sm font-medium">${currentLang === 'ko' ? '오프라인' : 'Offline'}</span>
+                </div>
+            `;
+
+        return `
+            <div class="server-card bg-gradient-to-br from-gray-900/80 to-gray-800/80 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:border-white/20 transition-all duration-300 hover:shadow-lg hover:shadow-black/20 overflow-hidden">
+                <!-- Server Header -->
+                <div class="flex items-start space-x-4">
+                    <!-- Server Icon -->
+                    <div class="flex-shrink-0">
+                        ${favicon
+                            ? `<img src="${favicon}" alt="${host}" class="w-12 h-12 rounded-lg bg-gray-800 object-cover" onerror="this.onerror=null; this.src='https://via.placeholder.com/64/1F2937/6B7280?text=MC';">`
+                            : `<div class="w-12 h-12 rounded-lg bg-gray-800 flex items-center justify-center">
+                                <i class="fas fa-server text-2xl text-gray-600"></i>
+                              </div>`
+                        }
+                    </div>
+
+                    <!-- Server Info -->
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-semibold text-white truncate flex items-center" title="${this.escapeHtml(host)}">
+                                ${this.escapeHtml(host)}
+                            </h3>
+                            <div class="flex items-center space-x-2">
+                                ${statusBadge}
+                            </div>
+                        </div>
+
+                        <div class="mt-1">
+                            <p class="text-sm text-gray-400 truncate">
+                                <i class="fas fa-globe mr-1.5 text-blue-400"></i>
+                                ${this.escapeHtml(address)}
+                            </p>
+                        </div>
+
+                        <div class="mt-2 grid grid-cols-2 gap-2">
+                            <!-- Player Count -->
+                            <div class="flex items-center text-sm text-gray-400 group">
+                                <i class="fas fa-users mr-1.5 text-blue-400"></i>
+                                <div class="relative">
+                                    <span class="relative group">
+                                        <span class="${isOnline ? 'text-white font-medium' : 'text-gray-400'}">${playerCount}</span>
+                                        <span class="text-gray-400">/</span>
+                                        <span class="text-gray-400">${maxPlayers}</span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Version -->
+                            <div class="flex items-center text-sm text-gray-400 group">
+                                <i class="fas fa-code-branch mr-1.5 text-purple-400"></i>
+                                <span class="truncate group-hover:text-white transition-colors duration-200" title="${this.escapeHtml(version)}">
+                                    ${this.escapeHtml(version.length > 15 ? version.substring(0, 15) + '...' : version)}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- Players -->
+                        ${playerList.length > 0 ? `
+                            <div class="mt-3">
+                                <div class="bg-black/30 border border-white/10 rounded-lg p-3 text-sm">
+                                    <div class="text-white/80 text-sm mb-1">
+                                        ${currentLang === 'ko' ? '플레이어 목록' : 'Online Players'} (${playerCount}/${maxPlayers}):
+                                    </div>
+                                    <div class="flex flex-wrap gap-1">
+                                        ${playerList.map(player => `
+                                            <span class="bg-white/5 px-2 py-0.5 rounded text-xs text-white/80">
+                                                ${this.escapeHtml(player.name || player)}
+                                            </span>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        <!-- MOTD -->
+                        ${motd ? `
+                            <div class="mt-3">
+                                <div class="bg-black/30 border border-white/10 rounded-lg p-3 text-sm">
+                                    <div class="text-white/80 whitespace-pre-wrap text-sm leading-relaxed">
+                                        ${this.escapeHtml(motd).replace(/\n/g, '<br>')}
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+                
+                <!-- Copy Address Button -->
+                <div class="mt-4">
+                    <button data-address="${this.escapeHtml(address)}" 
+                            class="copy-address-button w-full inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20">
+                        <i class="far fa-copy mr-2"></i>
+                        <span>${currentLang === 'ko' ? '주소 복사' : 'Copy Address'}</span>
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Show empty state when no servers are found
+    showEmptyState() {
+        if (!this.serverListElement) return;
+        
+        const noServersText = currentLang === 'ko' ? 
+            '서버를 찾을 수 없습니다.' : 
+            'No servers found.';
+            
+        this.serverListElement.innerHTML = `
+            <div class="col-span-full text-center py-12">
+                <div class="bg-white/5 border border-white/10 rounded-lg p-6 max-w-2xl mx-auto">
+                    <i class="fas fa-server text-white/50 text-4xl mb-4"></i>
+                    <h3 class="text-xl font-semibold text-white mb-2">
+                        ${noServersText}
+                    </h3>
+                </div>
+            </div>
+        `;
+        
+        // Update pagination to show 0 results
+        this.updatePagination();
+    }
+
+    // Helper method to check if server matches search term
+    serverMatchesSearch(server, term) {
+        const name = (server.name || '').toLowerCase();
+        const host = (server.domain || server.host || '').toLowerCase();
+        const motd = (server.status?.motd?.clean || '').toLowerCase();
+        return name.includes(term) || host.includes(term) || motd.includes(term);
+    }
+    
+    // Show or hide loading state
+    showLoading(show) {
+        if (!this.loadingElement) return;
+        
+        if (show) {
+            this.loadingElement.style.display = 'block';
+            this.loadingElement.innerHTML = `
+                <div class="flex items-center justify-center space-x-2">
+                    <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    <span>${currentLang === 'ko' ? '로딩 중...' : 'Loading...'}</span>
+                </div>
+            `;
+        } else {
+            this.loadingElement.style.display = 'none';
+        }
+    }
+    
+    // Show error message
+    showError(message) {
+        if (this.loadingElement) {
+            this.loadingElement.style.display = 'block';
+            this.loadingElement.innerHTML = `
+                <div class="text-red-400 text-center">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    ${message}
+                </div>
+            `;
+        }
+        
+        console.error(message);
+    }
+    
+    // Helper method to escape HTML
+    escapeHtml(unsafe) {
+        if (!unsafe) return '';
+        return unsafe
+            .toString()
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+}
+
+// Initialize the server list manager when the DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    // Check if we're on the server list page
+    if (document.getElementById('server-list')) {
+        const serverListManager = new ServerListManager();
+        
+        // Initialize the server list manager
+        serverListManager.init();
+        
+        // Add search input event listener
+        const searchInput = document.getElementById('server-search');
+        let searchTimeout;
+        
+        if (searchInput) {
+            const clearButton = searchInput.parentElement.querySelector('.clear-search');
+            
+            // Function to update clear button visibility
+            const updateClearButton = () => {
+                if (clearButton) {
+                    clearButton.style.display = searchInput.value.trim() ? 'flex' : 'none';
+                }
+            };
+            
+            // Initial update
+            updateClearButton();
+            
+            // Handle input events with debounce
+            searchInput.addEventListener('input', (e) => {
+                updateClearButton();
+                
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    // Reset to first page when searching
+                    serverListManager.currentPage = 1;
+                    serverListManager.renderServers();
+                }, 300); // 300ms debounce
+            });
+            
+            // Add clear button functionality
+            if (clearButton) {
+                clearButton.addEventListener('click', () => {
+                    searchInput.value = '';
+                    searchInput.focus();
+                    updateClearButton();
+                    serverListManager.currentPage = 1;
+                    serverListManager.renderServers();
+                });
+            }
+            
+            // Handle escape key to clear search
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && searchInput.value) {
+                    e.preventDefault();
+                    searchInput.value = '';
+                    updateClearButton();
+                    serverListManager.currentPage = 1;
+                    serverListManager.renderServers();
+                }
+            });
+        }
+        
+        // Store the server list manager instance for debugging
+        window.serverListManager = serverListManager;
+    }
+    
+    // Run the main function if it exists
+    if (typeof main === 'function') {
+        main();
+    }
+});

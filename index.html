@@ -1,12 +1,11 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-lang="ko">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="DP-PLUGINS - Minecraft plugins and resources">
-    <meta name="keywords"
-        content="Minecraft, plugins, DP-PLUGINS, gaming, Minecraft plugins, server mods, 마인크래프트, 플러그인, 게임 모드, 서버 관리">
+    <meta name="keywords" content="Minecraft, plugins, DP-PLUGINS, gaming, Minecraft plugins, minecraft server mods, minecraft server list, minecraft server search, 마인크래프트, 플러그인, 마인크래프트 모드, 마인크래프트 서버 찾기, 마인크래프트 서버 목록, 마인크래프트 서버 리스트">
     <meta name="author" content="DP-PLUGINS">
     <meta property="og:title" content="DP-PLUGINS">
     <meta property="og:description" content="DP-PLUGINS - Minecraft plugins and resources">
@@ -34,11 +33,17 @@
                     <img src="assets/img/logo_white.png" alt="DP-PLUGINS" class="h-10 md:h-12 w-auto">
                 </a>
                 <div class="flex items-center space-x-4">
+                    <a href="/" class="bg-red-600 text-white/80 hover:text-white px-3 py-2 rounded-md text-base font-bold transition-colors duration-200" data-i18n="home">
+                        Home
+                    </a>
+                    <a href="server-list.html" class="text-white px-3 py-2 rounded-md text-base font-bold transition-colors duration-200" data-i18n="server_list">
+                        Server List
+                    </a>
                     <div class="sns-container bg-white/5 rounded-lg p-2 flex items-center">
                         <button id="lang-toggle-btn" aria-label="Language"
                             class="ml-4 mr-3 flex items-center gap-2 px-2 py-1 md:px-3 md:py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold transition-all duration-200 text-sm md:text-base">
                             <i class="fas fa-globe text-base md:text-xl"></i>
-                            <span id="lang-toggle-text">한국어</span>
+                            <span id="lang-toggle-text" data-i18n="korean">한국어</span>
                         </button>
                         <a href="https://discord.gg/JnMCqkn2FX" aria-label="Discord" target="_blank"
                             class="w-9 h-9 md:w-12 md:h-12 flex items-center justify-center rounded-full hover:bg-black/50 hover:scale-110 transition-all duration-300">
@@ -72,12 +77,12 @@
         <div class="container mx-auto px-4">
             <h2 id="plugins-section-title" class="text-3xl md:text-4xl font-bold text-white text-center mb-12"
                 data-translate="plugins_section_title"></h2>
-            <div class="relative w-full md:w-1/2 mx-auto mb-8 flex items-center"
-                style="background:#fff;border-radius:2rem;box-shadow:0 8px 32px 0 rgba(255,0,0,0.13);">
-                <i
-                    class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-red-400 text-lg pointer-events-none"></i>
+            <div class="relative mb-8 max-w-2xl mx-auto">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-white/50"></i>
+                </div>
                 <input type="text" id="search-input"
-                    class="allow-select bg-black/10 w-full px-4 py-2 pl-11 rounded-full text-black" autocomplete="off"
+                    class="w-full bg-white/5 border border-white/10 rounded-lg py-3 pl-10 pr-4 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" autocomplete="off"
                     data-translate="search_placeholder" placeholder="플러그인 검색...">
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="plugins-container">
@@ -109,7 +114,23 @@
         </div>
     </footer>
 
+    <!-- Scripts -->
     <script src="script.js"></script>
+    <script>
+        // Initialize the main application
+        document.addEventListener('DOMContentLoaded', () => {
+            // The main initialization is handled in script.js
+            
+            // Add event listener for language toggle button
+            const langToggleBtn = document.getElementById('lang-toggle-btn');
+            if (langToggleBtn) {
+                langToggleBtn.addEventListener('click', () => {
+                    // The main script.js will handle the language toggle
+                    // and update the UI accordingly
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>

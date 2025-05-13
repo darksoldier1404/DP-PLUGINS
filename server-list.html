@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko" data-lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="DP-PLUGINS Server List - Check the status of your favorite Minecraft servers">
+    <meta name="keywords" content="Minecraft, plugins, DP-PLUGINS, gaming, Minecraft plugins, minecraft server mods, minecraft server list, minecraft server search, 마인크래프트, 플러그인, 마인크래프트 모드, 마인크래프트 서버 찾기, 마인크래프트 서버 목록, 마인크래프트 서버 리스트">
+    <meta name="author" content="DP-PLUGINS">
+    <meta property="og:title" content="DP-PLUGINS Server List">
+    <meta property="og:description" content="DP-PLUGINS Server List - Check the status of your favorite Minecraft servers">
+    <meta property="og:type" content="website">
+    <meta name="robots" content="index, follow">
+    <title>DP-PLUGINS Server List</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="DPP_32.ico" sizes="32x32" type="image/x-icon">
+    <link rel="icon" href="DPP_16.ico" sizes="16x16" type="image/x-icon">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" as="style"
+        onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    </noscript>
+    <link rel="preload" fetchpriority="high" as="image" href="assets/img/logo_white.png" type="image/png">
+</head>
+
+<body class="bg-black">
+    <!-- 네비게이션 바 -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-black/70 backdrop-blur-xs border-b border-red-500/10">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <a href="/" class="flex items-center">
+                    <img src="assets/img/logo_white.png" alt="DP-PLUGINS" class="h-10 md:h-12 w-auto">
+                </a>
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="text-white/80 hover:text-white px-3 py-2 rounded-md text-base font-bold transition-colors duration-200" data-i18n="home">
+                        Home
+                    </a>
+                    <a href="server-list.html" class="bg-red-600 text-white px-3 py-2 rounded-md text-base font-bold transition-colors duration-200" data-i18n="server_list">
+                        Server List
+                    </a>
+                    <div class="sns-container bg-white/5 rounded-lg p-2 flex items-center">
+                        <button id="lang-toggle-btn" aria-label="Language"
+                            class="ml-4 mr-3 flex items-center gap-2 px-2 py-1 md:px-3 md:py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold transition-all duration-200 text-sm md:text-base">
+                            <i class="fas fa-globe text-base md:text-xl"></i>
+                            <span id="lang-toggle-text" data-i18n="korean">한국어</span>
+                        </button>
+                        <a href="https://discord.gg/JnMCqkn2FX" aria-label="Discord" target="_blank"
+                            class="w-9 h-9 md:w-12 md:h-12 flex items-center justify-center rounded-full hover:bg-black/50 hover:scale-110 transition-all duration-300">
+                            <i class="fab fa-discord text-white/80 hover:text-white transition-colors duration-300 text-base md:text-xl"></i>
+                        </a>
+                        <a href="https://github.com/darksoldier1404" aria-label="GitHub" target="_blank"
+                            class="w-9 h-9 md:w-12 md:h-12 flex items-center justify-center rounded-full hover:bg-black/50 hover:scale-110 transition-all duration-300">
+                            <i class="fab fa-github text-white/80 hover:text-white transition-colors duration-300 text-base md:text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="min-h-screen">
+        <!-- Hero Section -->
+        <section class="relative h-[50vh] flex items-center justify-center bg-[#1a1a1a] pt-16">
+            <div class="absolute inset-0 bg-black/50"></div>
+            <div class="relative container mx-auto px-4 text-center">
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6" data-i18n="server_list_title">Minecraft Server List</h1>
+                <p class="text-xl text-white/80 max-w-2xl mx-auto" data-i18n="server_list_subtitle">Check the status of your favorite Minecraft servers in real-time</p>
+            </div>
+        </section>
+
+        <!-- Server List Section -->
+        <section class="py-12 bg-[#1a1a1a]">
+            <div class="container mx-auto px-4">
+                <!-- Search and Filter -->
+                <div class="mb-8 max-w-2xl mx-auto">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-white/50"></i>
+                        </div>
+                        <input type="text" id="server-search" 
+                               class="w-full bg-white/5 border border-white/10 rounded-lg py-3 pl-10 pr-10 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
+                               placeholder="" data-i18n-placeholder="search_servers_placeholder"
+                               autocomplete="off">
+                        <button type="button" class="clear-search absolute inset-y-0 right-0 pr-3 flex items-center text-white/50 hover:text-white transition-colors duration-200" style="display: none;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Server List -->
+                <div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-2" id="server-list">
+                    <!-- Server cards will be inserted here by JavaScript -->
+                    <div class="col-span-full text-center text-white/60 py-2">
+                        <div class="animate-pulse flex flex-col items-center">
+                            <div class="w-16 h-16 rounded-full border-4 border-white/10 border-t-red-500 animate-spin mb-6"></div>
+                            <p class="text-xl font-medium text-white/80" data-i18n="loading_servers">Loading server list...</p>
+                            <p class="text-sm text-white/50 mt-2" data-i18n="loading_servers_subtitle">This may take a few seconds</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination Controls -->
+                <div class="mt-8">
+                    <div class="flex flex-col items-center justify-center space-y-4">
+                        <!-- Page Info -->
+                        <p class="text-sm text-gray-400 text-center" id="page-info">
+                            <span class="font-medium">0</span> to <span class="font-medium">0</span> of <span class="font-medium">0</span> servers
+                        </p>
+                        
+                        <!-- Pagination Buttons -->
+                        <div class="flex items-center justify-center">
+                            <!-- First Page Button -->
+                            <button id="first-page" class="px-3 py-1 rounded-l-md border border-gray-700 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200" title="First Page">
+                                <i class="fas fa-angle-double-left"></i>
+                            </button>
+                            
+                            <!-- Previous Page Button -->
+                            <button id="prev-page" class="px-3 py-1 border-t border-b border-gray-700 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200" title="Previous Page">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            
+                            <!-- Current Page / Total Pages -->
+                            <div id="page-numbers" class="px-4 py-1 border-t border-b border-gray-700 text-sm font-medium text-white bg-gray-800">
+                                1 / 1
+                            </div>
+                            
+                            <!-- Next Page Button -->
+                            <button id="next-page" class="px-3 py-1 border-t border-b border-r border-gray-700 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200" title="Next Page">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                            
+                            <!-- Last Page Button -->
+                            <button id="last-page" class="px-3 py-1 rounded-r-md border border-gray-700 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200" title="Last Page">
+                                <i class="fas fa-angle-double-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+    <script>
+        // Handle language toggle button click for server list page
+        document.addEventListener('DOMContentLoaded', () => {
+            const langToggleBtn = document.getElementById('lang-toggle-btn');
+            if (langToggleBtn) {
+                langToggleBtn.addEventListener('click', () => {
+                    // The main script.js will handle the language toggle
+                    // and the ServerListManager will automatically update
+                    // when the language changes
+                    if (window.serverListManager) {
+                        window.serverListManager.renderServers();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>
