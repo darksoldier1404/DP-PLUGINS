@@ -1179,7 +1179,7 @@ class ServerListManager {
                       server.status?.version?.name_raw || 
                       server.status?.version?.name || 
                       'Unknown';
-        const motd = server.status?.motd?.clean || '';
+        const motd = server.status?.motd?.html || '';
         const host = server.domain || server.host || 'Unknown';
         const port = server.port || server.status?.port || 25565;
         const address = port !== 25565 ? `${host}:${port}` : host;
@@ -1282,9 +1282,7 @@ class ServerListManager {
                         ${motd ? `
                             <div class="mt-3">
                                 <div class="bg-black/30 border border-white/10 rounded-lg p-3 text-sm">
-                                    <div class="text-white/80 whitespace-pre-wrap text-sm leading-relaxed">
-                                        ${this.escapeHtml(motd).replace(/\n/g, '<br>')}
-                                    </div>
+                                    <div class="text-white/80 whitespace-pre-wrap text-sm leading-relaxed" style="font-family: 'Minecraft', monospace;">${motd}</div>
                                 </div>
                             </div>
                         ` : ''}
