@@ -613,10 +613,21 @@ function forceDarkMode() {
 }
 
 document.getElementById('lang-toggle-btn')?.addEventListener('click', () => {
+    // Toggle language
     currentLang = currentLang === 'ko' ? 'en' : 'ko';
     localStorage.setItem('language', currentLang);
-    loadLang(currentLang);
-    updatePluginsSection(allPlugins, document.getElementById('search-input')?.value || '');
+    
+    // Load the new language and update the UI
+    loadLang(currentLang).then(() => {
+        // If we're on the server list page, refresh the server list to update the language
+        if (window.location.pathname.includes('server-list.html') && window.serverListManager) {
+            window.serverListManager.updateServerList();
+        }
+        // Update plugins section if on the main page
+        else if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/') {
+            updatePluginsSection(allPlugins, document.getElementById('search-input')?.value || '');
+        }
+    });
 });
 
 // Server List Manager Class
