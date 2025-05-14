@@ -57,22 +57,6 @@
                 ],
                 "recommended": []
             }
-        },
-        {
-            "name": "DP-RandomBox",
-            "description": {
-                "ko": "심플한 랜덤박스 플러그인 입니다.<br>랜덤박스 쿠폰, GUI 설정.",
-                "en": "Simple random box plugin. Random box coupon, GUI support."
-            },
-            "pluginIcon": "assets/img/icon/red_bundle.png",
-            "supportVersion": "1.14-1.21.5",
-            "pluginImgList": [],
-            "dependencies": {
-                "required": [
-                    "DPP-Core"
-                ],
-                "recommended": []
-            }
         }
     ]
 }

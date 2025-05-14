@@ -1,43 +1,75 @@
 async function fetchPluginData() {
     try {
+        // Fetch local plugin data
         const jsonResponse = await fetch('pluginData.json');
-        if (!jsonResponse.ok) throw new Error('pluginData.json 로드 실패');
-        const { plugins: jsonPlugins } = await jsonResponse.json();
+        if (!jsonResponse.ok) throw new Error('Failed to load pluginData.json');
+        
+        const data = await jsonResponse.json();
+        if (!data.plugins || !Array.isArray(data.plugins)) {
+            throw new Error('Invalid plugin data format');
+        }
+        const jsonPlugins = data.plugins;
 
         const plugins = [];
-        const releasesResponse = await fetch('https://raw.githubusercontent.com/darksoldier1404/DPP-Releases/main/releases.json');
-        const releases = await releasesResponse.json();
-        for (const jsonPlugin of jsonPlugins) {
-            let version = '0.0.0.0';
+        let releases = [];
+        
+        try {
+            // Fetch releases data
+            const releasesResponse = await fetch('https://raw.githubusercontent.com/darksoldier1404/DPP-Releases/main/releases.json');
             if (releasesResponse.ok) {
-                const release = releases.find(r => r.repo.includes(jsonPlugin.name));
-                if (release) {
-                    version = release.tag;
-                }
+                releases = await releasesResponse.json();
+                // if (!Array.isArray(releases)) {
+                //     console.warn('Releases data is not an array, using empty array');
+                //     releases = [];
+                // }
             }
+        } catch (error) {
+            console.warn('Failed to fetch releases data:', error);
+        }
+
+        // Process each plugin
+        for (const jsonPlugin of jsonPlugins) {
+            if (!jsonPlugin.name) continue;
+            let version = '???';
+            let releaseNotes = '???';
+            let releaseDate = '???';
+            
+            // Find matching release
+            const release = releases.releases[jsonPlugin.name][0];
+            if (release) {
+                version = release.tag || version;
+                releaseNotes = release.body || 'No release notes available';
+                releaseDate = release.published_at || 'No release date available';
+            }
+            
             plugins.push({
                 name: jsonPlugin.name,
                 version,
-                description: jsonPlugin.description,
+                updateHistory: releases.update_history[jsonPlugin.name],
+                description: jsonPlugin.description || 'No description available',
                 downloadUrl: `https://github.com/darksoldier1404/${jsonPlugin.name}/releases`,
-                imageUrl: jsonPlugin.pluginIcon,
-                supportVersion: jsonPlugin.supportVersion,
-                imglist: jsonPlugin.pluginImgList,
-                dependencies: jsonPlugin.dependencies
+                imageUrl: jsonPlugin.pluginIcon || '',
+                supportVersion: jsonPlugin.supportVersion || '???',
+                imglist: jsonPlugin.pluginImgList ? jsonPlugin.pluginImgList : [],
+                dependencies: jsonPlugin.dependencies ? jsonPlugin.dependencies : [],
+                releaseNotes,
+                releaseDate,
+                repoUrl: `https://github.com/darksoldier1404/${jsonPlugin.name}`
             });
         }
+        
         return plugins;
     } catch (error) {
-        console.error(`플러그인 데이터 가져오기 실패:`, error);
+        console.error('Failed to fetch plugin data:', error);
         return [];
     }
 }
 
 function createPluginCard(plugin) {
-    const description = typeof plugin.description === 'object' 
+    const description = typeof plugin.description === 'object'
         ? (plugin.description[currentLang] || plugin.description.en || '')
         : (plugin.description || '');
-        
+
     return `
         <a href="plugin.html?plugin=${encodeURIComponent(plugin.name)}" class="plugin-card group relative bg-gradient-to-br from-black/90 via-black/80 to-red-900/80 rounded-2xl p-6 shadow-2xl border border-red-700/30 hover:scale-[1.03] hover:shadow-red-700/40 transition-all duration-300 flex flex-col h-[200px] overflow-hidden backdrop-blur cursor-pointer">
             <div class="absolute right-4 top-4">
@@ -210,11 +242,11 @@ async function loadPluginInfo(allPlugins) {
         window.location.href = 'index.html';
         return;
     }
-    
+
     // Display dependencies if they exist
-    if (plugin.dependencies && 
-        ((plugin.dependencies.required && plugin.dependencies.required.length > 0) || 
-         (plugin.dependencies.recommended && plugin.dependencies.recommended.length > 0))) {
+    if (plugin.dependencies &&
+        ((plugin.dependencies.required && plugin.dependencies.required.length > 0) ||
+            (plugin.dependencies.recommended && plugin.dependencies.recommended.length > 0))) {
         displayDependencies(plugin.dependencies);
     } else {
         const depsContainer = document.getElementById('dependencies');
@@ -270,6 +302,170 @@ async function loadPluginInfo(allPlugins) {
             `;
         }
     }
+    
+    // Display update notes if available
+    const updateNotesSection = document.getElementById('update-notes');
+    if (plugin.releaseNotes && plugin.releaseNotes !== '???' && updateNotesSection) {
+        const updateDate = document.getElementById('update-date');
+        const updateVersion = document.getElementById('update-version');
+        const releaseNotes = document.getElementById('release-notes');
+        
+        if (updateDate && plugin.releaseDate) {
+            const date = new Date(plugin.releaseDate);
+            updateDate.textContent = date.toLocaleDateString(currentLang === 'ko' ? 'ko-KR' : 'en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+        
+        if (updateVersion) {
+            updateVersion.textContent = `v${plugin.version}`;
+        }
+        
+        if (releaseNotes) {
+            // Show loading state
+            releaseNotes.innerHTML = `<p class="text-white/60 text-center py-4">${currentLang === 'ko' ? '릴리즈 노트를 불러오는 중...' : 'Loading release notes...'}</p>`;
+            
+            try {
+                // Convert escaped newlines to actual newlines before parsing
+                const formattedReleaseNotes = plugin.releaseNotes.replace(/\\n/g, '\n');
+                const parsedContent = DOMPurify.sanitize(marked.parse(formattedReleaseNotes, {
+                    breaks: true,
+                    gfm: true
+                }));
+                
+                releaseNotes.innerHTML = `
+                    <div class="markdown-body">
+                        ${parsedContent}
+                    </div>`;
+                
+                // Add consistent styling
+                const markdownContent = releaseNotes.querySelector('.markdown-body');
+                if (markdownContent) {
+                    markdownContent.classList.add('prose', 'prose-invert', 'max-w-none');
+                }
+            } catch (error) {
+                console.error('Error parsing release notes:', error);
+                releaseNotes.innerHTML = `
+                    <div class="text-center py-4 text-white/60">
+                        <i class="fas fa-exclamation-triangle text-yellow-400 mr-2"></i>
+                        <span>${currentLang === 'ko' ? '릴리즈 노트를 표시할 수 없습니다.' : 'Failed to display release notes.'}</span>
+                    </div>`;
+            }
+        }
+    } else if (updateNotesSection) {
+        updateNotesSection.style.display = 'none';
+    }
+    
+    // Display update history if available
+    if (plugin.updateHistory) {
+        const historyContainer = document.getElementById('history-container');
+        if (historyContainer) {
+            try {
+                // Create a temporary container for the loading message
+                const tempContainer = document.createElement('div');
+                tempContainer.innerHTML = `<p class="text-white/60 text-center py-4">${currentLang === 'ko' ? '업데이트 내역을 불러오는 중...' : 'Loading update history...'}</p>`;
+                historyContainer.innerHTML = '';
+                historyContainer.appendChild(tempContainer);
+                
+                // Create the actual content container
+                const updateElement = document.createElement('div');
+                updateElement.className = 'markdown-body p-6 rounded-lg whitespace-pre-line';
+                
+                // Convert escaped newlines to actual newlines before parsing
+                const formattedUpdateHistory = plugin.updateHistory.replace(/\\n/g, '\n');
+                updateElement.innerHTML = DOMPurify.sanitize(
+                    marked.parse(formattedUpdateHistory, {
+                        breaks: true,
+                        gfm: true
+                    })
+                );
+                
+                // Apply GitHub markdown styles
+                const style = document.createElement('style');
+                style.textContent = `
+                    .markdown-body {
+                        color: #e5e7eb;
+                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+                        line-height: 1.6;
+                    }
+                    .markdown-body h1, 
+                    .markdown-body h2, 
+                    .markdown-body h3, 
+                    .markdown-body h4, 
+                    .markdown-body h5, 
+                    .markdown-body h6 {
+                        margin-top: 1.5em;
+                        margin-bottom: 0.8em;
+                        font-weight: 600;
+                        line-height: 1.25;
+                    }
+                    .markdown-body h1 { font-size: 2em; border-bottom: 1px solid #374151; padding-bottom: 0.3em; }
+                    .markdown-body h2 { font-size: 1.5em; border-bottom: 1px solid #374151; padding-bottom: 0.3em; }
+                    .markdown-body h3 { font-size: 1.25em; }
+                    .markdown-body pre {
+                        border-radius: 6px;
+                        padding: 16px;
+                        overflow: auto;
+                        line-height: 1.45;
+                    }
+                    .markdown-body code {
+                        font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+                        background-color: rgba(110, 118, 129, 0.4);
+                        border-radius: 6px;
+                        padding: 0.2em 0.4em;
+                        font-size: 85%;
+                    }
+                    .markdown-body pre > code {
+                        background-color: transparent;
+                        padding: 0;
+                    }
+                    .markdown-body a {
+                        color: #60a5fa;
+                        text-decoration: none;
+                    }
+                    .markdown-body a:hover {
+                        text-decoration: underline;
+                    }
+                    .markdown-body ul, 
+                    .markdown-body ol {
+                        padding-left: 2em;
+                        margin-top: 0;
+                        margin-bottom: 1em;
+                    }
+                    .markdown-body li {
+                        margin-bottom: 0.25em;
+                    }
+                    .markdown-body blockquote {
+                        border-left: 0.25em solid #4b5563;
+                        color: #9ca3af;
+                        padding: 0 1em;
+                        margin: 0 0 1em 0;
+                    }
+                `;
+                
+                // Clear the container and add the new content
+                historyContainer.innerHTML = '';
+                document.head.appendChild(style);
+                historyContainer.appendChild(updateElement);
+                
+            } catch (error) {
+                console.error('Error loading update history:', error);
+                historyContainer.innerHTML = `
+                    <div class="text-center py-4 text-white/60">
+                        <i class="fas fa-exclamation-triangle text-yellow-400 mr-2"></i>
+                        <span>${currentLang === 'ko' ? '업데이트 내역을 표시할 수 없습니다.' : 'Failed to display update history.'}</span>
+                    </div>`;
+            }
+        }
+    } else {
+        const updateHistorySection = document.getElementById('update-history');
+        if (updateHistorySection) {
+            updateHistorySection.style.display = 'none';
+        }
+    }
+    
     loadScreenshots(pluginName, plugin.imglist);
     loadReadme(pluginName);
 }
@@ -278,13 +474,13 @@ async function loadReadme(pluginName) {
     const contentDiv = document.getElementById('plugin-content');
     const loadingText = currentLang === 'ko' ? '플러그인 설명을 불러오는 중...' : 'Loading plugin description...';
     const errorText = currentLang === 'ko' ? '플러그인 설명을 불러올 수 없습니다.' : 'Failed to load plugin description.';
-    
+
     // Show loading state
     contentDiv.innerHTML = `<p class="text-white/60 text-center py-8">${loadingText}</p>`;
-    
+
     try {
         const response = await fetch(`https://raw.githubusercontent.com/darksoldier1404/${pluginName}/master/README.md`);
-        
+
         if (response.ok) {
             let readmeContent = await response.text();
             readmeContent = extractLanguageContent(readmeContent, currentLang);
@@ -292,7 +488,7 @@ async function loadReadme(pluginName) {
         } else {
             contentDiv.innerHTML = `<p class="text-white/60 text-center py-8">${errorText}</p>`;
         }
-        
+
         // Add styling to markdown content
         const markdownContent = contentDiv.querySelector('.markdown-body');
         if (markdownContent) {
@@ -313,12 +509,12 @@ function extractLanguageContent(content, lang) {
     const langTag = lang === 'ko' ? 'korean' : 'english';
     const regex = new RegExp(`<details>\\s*<summary>${langTag}</summary>([\\s\\S]*?)</details>`, 'i');
     const match = content.match(regex);
-    
+
     if (match && match[1]) {
         // Return the content inside the matching details tag
         return match[1].trim();
     }
-    
+
     // If no matching language section found, return the original content
     return content;
 }
@@ -326,11 +522,11 @@ function extractLanguageContent(content, lang) {
 function displayDependencies(dependencies) {
     const container = document.getElementById('dependencies-container');
     if (!container) return;
-    
+
     // Check if there are any dependencies
-    const hasDependencies = (dependencies.required && dependencies.required.length > 0) || 
-                          (dependencies.recommended && dependencies.recommended.length > 0);
-    
+    const hasDependencies = (dependencies.required && dependencies.required.length > 0) ||
+        (dependencies.recommended && dependencies.recommended.length > 0);
+
     if (!hasDependencies) {
         container.innerHTML = `
             <div class="col-span-full text-center py-4 text-white/70">
@@ -339,9 +535,9 @@ function displayDependencies(dependencies) {
             </div>`;
         return;
     }
-    
+
     let html = '';
-    
+
     // Process required dependencies
     if (dependencies.required && dependencies.required.length > 0) {
         html += `
@@ -351,7 +547,7 @@ function displayDependencies(dependencies) {
             </div>
         </div>`;
     }
-    
+
     // Process recommended dependencies
     if (dependencies.recommended && dependencies.recommended.length > 0) {
         html += `
@@ -361,7 +557,7 @@ function displayDependencies(dependencies) {
             </div>
         </div>`;
     }
-    
+
     container.innerHTML = html;
 }
 
@@ -370,7 +566,7 @@ function createDependencyCard(dep, isRequired) {
     const icon = isCore ? 'cog' : 'external-link-alt';
     const bgColor = isRequired ? 'from-red-500 to-red-600' : 'from-blue-500 to-blue-600';
     const depType = isRequired ? 'required' : 'recommended';
-    
+
     // Get translated text based on current language
     const getTypeText = () => {
         if (isRequired && isCore) return langData[currentLang]?.required_core_plugin || 'Required Core Plugin';
@@ -378,9 +574,9 @@ function createDependencyCard(dep, isRequired) {
         if (isCore) return langData[currentLang]?.recommended_core_plugin || 'Recommended Core Plugin';
         return langData[currentLang]?.recommended_plugin || 'Recommended Plugin';
     };
-    
+
     const typeText = getTypeText();
-    
+
     return `
     <div class="bg-black/20 rounded-lg p-4 border border-white/10 hover:border-${isRequired ? 'red' : 'blue'}-500/50 transition-colors">
         <div class="flex items-center gap-4">
@@ -434,13 +630,13 @@ async function loadLang(lang) {
     currentLang = lang;
     localStorage.setItem('language', lang);
     document.documentElement.lang = lang;
-    
+
     // Update language toggle button
     const langToggle = document.getElementById('lang-toggle-btn');
     if (langToggle) {
         langToggle.innerHTML = lang === 'ko' ? '<i class="fas fa-globe"></i> English' : '<i class="fas fa-globe"></i> 한국어';
     }
-    
+
     try {
         langData = {
             ko: await kr,
@@ -449,9 +645,9 @@ async function loadLang(lang) {
     } catch (error) {
         console.error(`Failed to load language data:`, error);
     }
-    
+
     await applyLang();
-    
+
     // Refresh the UI based on current page
     if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/') {
         // Update plugin cards on the main page
@@ -472,14 +668,14 @@ async function loadLang(lang) {
 async function applyLang() {
     // Wait for language data to be loaded
     const data = await langData[currentLang];
-    
+
     const map = [
         ['lang-toggle-text', currentLang === 'ko' ? 'English' : '한국어'],
         ['main-subtitle', data?.main_subtitle || ''],
         ['plugins-section-title', data?.plugins_section_title || ''],
         ['search-input', data?.search_placeholder || '', 'placeholder']
     ];
-    
+
     map.forEach(([id, text, attr]) => {
         const el = document.getElementById(id);
         if (el) {
@@ -487,7 +683,7 @@ async function applyLang() {
             else el.textContent = text;
         }
     });
-    
+
     // Update all elements with data-translate attribute
     const elements = document.querySelectorAll('[data-translate]');
     elements.forEach(el => {
@@ -496,7 +692,7 @@ async function applyLang() {
             el.textContent = data[key];
         }
     });
-    
+
     // Update all elements with data-i18n attribute
     const i18nElements = document.querySelectorAll('[data-i18n]');
     i18nElements.forEach(el => {
@@ -505,32 +701,32 @@ async function applyLang() {
             el.textContent = data[key];
         }
     });
-    
+
     // Update navigation text
     const navHome = document.querySelector('a[data-i18n="home"]');
     const navServerList = document.querySelector('a[data-i18n="server_list"]');
-    
+
     if (navHome && data?.home) {
         navHome.textContent = data.home;
     }
-    
+
     if (navServerList && data?.server_list) {
         navServerList.textContent = data.server_list;
     }
-    
+
     // Update language toggle button text to show the opposite language
     const langToggleText = document.getElementById('lang-toggle-text');
     if (langToggleText && data) {
         // Show the opposite language name (if current is Korean, show 'English' and vice versa)
         langToggleText.textContent = currentLang === 'ko' ? data.english : data.korean;
     }
-    
+
     // Update page title
     const pageTitle = document.querySelector('title[data-i18n]');
     if (pageTitle && data?.site_title) {
         pageTitle.textContent = data.site_title;
     }
-    
+
     // Load README if on plugin page
     if (window.location.pathname.endsWith('plugin.html')) {
         const urlParams = new URLSearchParams(window.location.search);
@@ -544,11 +740,11 @@ async function applyLang() {
 async function main() {
     forceDarkMode();
     await loadLang(currentLang);
-    
+
     // Initialize server list if on server list page
     if (window.location.pathname.endsWith('server-list.html')) {
         window.serverListManager = new ServerListManager();
-        
+
         // Add search functionality
         const searchInput = document.getElementById('server-search');
         if (searchInput) {
@@ -560,12 +756,12 @@ async function main() {
         }
         return;
     }
-    
+
     // Handle plugin pages
     const plugins = await fetchPluginData();
     allPlugins = plugins;
     const isPluginPage = window.location.pathname.includes('plugin.html');
-    
+
     if (isPluginPage) {
         await loadPluginInfo(allPlugins);
         await updatePluginsSection(allPlugins);
@@ -616,7 +812,7 @@ document.getElementById('lang-toggle-btn')?.addEventListener('click', () => {
     // Toggle language
     currentLang = currentLang === 'ko' ? 'en' : 'ko';
     localStorage.setItem('language', currentLang);
-    
+
     // Load the new language and update the UI
     loadLang(currentLang).then(() => {
         // If we're on the server list page, refresh the server list to update the language
@@ -643,7 +839,7 @@ class ServerListManager {
         this.filteredServers = [];
         this.onlineServers = [];
         this.offlineServers = [];
-        
+
         if (this.serverListElement) {
             this.initCopyButtons();
             this.initPagination();
@@ -654,7 +850,7 @@ class ServerListManager {
     // Initialize the server list manager
     init() {
         this.loadServers();
-        
+
         // Add event listener for search input
         const searchInput = document.getElementById('server-search');
         if (searchInput) {
@@ -662,7 +858,7 @@ class ServerListManager {
                 this.handleSearch(e.target.value);
             });
         }
-        
+
         // Initialize pagination
         this.initPagination();
     }
@@ -679,7 +875,7 @@ class ServerListManager {
             const filteredOffline = this.offlineServers.filter(server => this.serverMatchesSearch(server, term));
             this.filteredServers = [...filteredOnline, ...filteredOffline];
         }
-        
+
         // Reset to first page and update the display
         this.currentPage = 1;
         this.updateServerList();
@@ -692,7 +888,7 @@ class ServerListManager {
         const prevPageBtn = document.getElementById('prev-page');
         const nextPageBtn = document.getElementById('next-page');
         const lastPageBtn = document.getElementById('last-page');
-        
+
         // Clone and replace buttons to remove old event listeners
         const replaceButton = (btn) => {
             if (!btn) return null;
@@ -700,12 +896,12 @@ class ServerListManager {
             btn.parentNode.replaceChild(newBtn, btn);
             return newBtn;
         };
-        
+
         const newFirstBtn = replaceButton(firstPageBtn);
         const newPrevBtn = replaceButton(prevPageBtn);
         const newNextBtn = replaceButton(nextPageBtn);
         const newLastBtn = replaceButton(lastPageBtn);
-        
+
         // Add new event listeners
         if (newFirstBtn) {
             newFirstBtn.addEventListener('click', (e) => {
@@ -713,14 +909,14 @@ class ServerListManager {
                 this.changePage(1);
             });
         }
-        
+
         if (newPrevBtn) {
             newPrevBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 this.changePage(Math.max(1, this.currentPage - 1));
             });
         }
-        
+
         if (newNextBtn) {
             newNextBtn.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -728,7 +924,7 @@ class ServerListManager {
                 this.changePage(Math.min(totalPages, this.currentPage + 1));
             });
         }
-        
+
         if (newLastBtn) {
             newLastBtn.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -736,7 +932,7 @@ class ServerListManager {
                 this.changePage(totalPages);
             });
         }
-        
+
         // Update button states
         this.updatePagination();
     }
@@ -744,7 +940,7 @@ class ServerListManager {
     // Update pagination controls and info
     updatePagination() {
         const totalPages = Math.max(1, Math.ceil(this.filteredServers.length / this.serversPerPage));
-        
+
         // Ensure current page is within bounds
         if (this.currentPage > totalPages && totalPages > 0) {
             this.currentPage = totalPages;
@@ -762,7 +958,7 @@ class ServerListManager {
         // Update button states
         const isFirstPage = this.currentPage <= 1;
         const isLastPage = this.currentPage >= totalPages || totalPages === 0;
-        
+
         if (firstPageBtn) firstPageBtn.disabled = isFirstPage;
         if (prevPageBtn) prevPageBtn.disabled = isFirstPage;
         if (nextPageBtn) nextPageBtn.disabled = isLastPage;
@@ -772,11 +968,11 @@ class ServerListManager {
         if (pageNumbers) {
             pageNumbers.textContent = totalPages > 0 ? `${this.currentPage} / ${totalPages}` : '0 / 0';
         }
-        
+
         // Update page info
         this.updatePageInfo();
     }
-    
+
     // Update URL hash to reflect current page
     updateUrlHash() {
         if (history.pushState) {
@@ -810,7 +1006,7 @@ class ServerListManager {
                 <span class="font-medium">${end}</span> of 
                 <span class="font-medium">${totalServers}</span> servers`;
         }
-        
+
         // Ensure the page info is visible
         this.pageInfoElement.style.display = 'block';
     }
@@ -819,22 +1015,22 @@ class ServerListManager {
     changePage(page) {
         const totalPages = Math.max(1, Math.ceil(this.filteredServers.length / this.serversPerPage));
         const newPage = Math.max(1, Math.min(page, totalPages));
-        
+
         // Only update if page actually changed
         if (newPage !== this.currentPage) {
             this.currentPage = newPage;
-            
+
             // Update the UI
             this.updateServerList();
-            
+
             // Update pagination controls
             this.updatePagination();
-            
+
             // Scroll to top of server list for better UX
             if (this.serverListElement) {
                 this.serverListElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
-            
+
             // Update URL hash for deep linking
             this.updateUrlHash();
         }
@@ -913,8 +1109,7 @@ class ServerListManager {
         for (let i = startPage; i <= endPage; i++) {
             const isActive = i === this.currentPage;
             paginationHTML += `
-                <button class="page-btn w-10 h-8 flex items-center justify-center text-sm font-medium border-t border-b border-gray-700 ${
-                isActive
+                <button class="page-btn w-10 h-8 flex items-center justify-center text-sm font-medium border-t border-b border-gray-700 ${isActive
                     ? 'bg-blue-600 text-white border-blue-600'
                     : 'bg-gray-800 text-gray-300 hover:bg-gray-700 border-gray-700'
                 } transition-colors duration-200" 
@@ -1074,15 +1269,15 @@ class ServerListManager {
     async loadServers() {
         try {
             this.showLoading(true);
-            
+
             // Load servers from the JSON file
             const response = await fetch('https://raw.githubusercontent.com/darksoldier1404/DPP-ServerStatus/refs/heads/main/data/output.json');
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            
+
             const serverList = await response.json();
-            
+
             // Transform server data to match our expected format
             this.servers = serverList.map(serverData => ({
                 domain: serverData.host,
@@ -1113,31 +1308,31 @@ class ServerListManager {
                 error: serverData.eula_blocked ? 'EULA Blocked' : null,
                 loading: false
             }));
-            
+
             // Sort servers: online first, then by player count (descending)
             this.servers.sort((a, b) => {
                 // Online servers first
                 if (a.status?.online !== b.status?.online) {
                     return b.status?.online ? 1 : -1;
                 }
-                
+
                 // Then sort by player count (descending)
                 const aPlayers = a.status?.players?.online || 0;
                 const bPlayers = b.status?.players?.online || 0;
                 return bPlayers - aPlayers;
             });
-            
+
             // Separate online and offline servers
             this.onlineServers = this.servers.filter(server => server.status?.online);
             this.offlineServers = this.servers.filter(server => !server.status?.online);
-            
+
             // Combine with online servers first
             this.filteredServers = [...this.onlineServers, ...this.offlineServers];
-            
+
             // Reset to first page and update the display
             this.currentPage = 1;
             this.updateServerList();
-            
+
         } catch (error) {
             console.error('Failed to load servers:', error);
             this.showError(currentLang === 'ko' ? '서버 목록을 불러오는 중 오류가 발생했습니다.' : 'Failed to load server list.');
@@ -1149,34 +1344,34 @@ class ServerListManager {
     // Update server list display
     updateServerList() {
         if (!this.serverListElement) return;
-        
+
         // Always update filtered servers to maintain correct order
         this.filteredServers = [...this.onlineServers, ...this.offlineServers];
         const totalPages = Math.max(1, Math.ceil(this.filteredServers.length / this.serversPerPage));
-        
+
         // Ensure current page is within valid range
         if (this.currentPage > totalPages) {
             this.currentPage = totalPages > 0 ? totalPages : 1;
         } else if (this.currentPage < 1) {
             this.currentPage = 1;
         }
-        
+
         // Get servers for current page
         const currentPageServers = this.getCurrentPageServers();
-        
+
         // Show empty state if no servers
         if (currentPageServers.length === 0) {
             this.showEmptyState();
             return;
         }
-        
+
         // Render the servers for the current page
         const serverCards = currentPageServers.map(server => this.createServerCard(server)).join('');
         this.serverListElement.innerHTML = serverCards;
-        
+
         // Update pagination controls
         this.updatePagination();
-        
+
         // Re-initialize copy buttons for the new server cards
         this.initCopyButtons();
     }
@@ -1186,17 +1381,17 @@ class ServerListManager {
         const isOnline = server.status?.online;
         const playerCount = server.status?.players?.online || 0;
         const maxPlayers = server.status?.players?.max || 0;
-        const version = server.status?.version?.name_clean || 
-                      server.status?.version?.name_raw || 
-                      server.status?.version?.name || 
-                      'Unknown';
+        const version = server.status?.version?.name_clean ||
+            server.status?.version?.name_raw ||
+            server.status?.version?.name ||
+            'Unknown';
         const motd = server.status?.motd?.html || '';
         const host = server.domain || server.host || 'Unknown';
         const port = server.port || server.status?.port || 25565;
         const address = port !== 25565 ? `${host}:${port}` : host;
         const favicon = server.status?.icon || '';
         const playerList = server.status?.players?.list || [];
-        
+
         // Generate server status badge with animation
         const statusBadge = isOnline
             ? `
@@ -1224,11 +1419,11 @@ class ServerListManager {
                     <!-- Server Icon -->
                     <div class="flex-shrink-0">
                         ${favicon
-                            ? `<img src="${favicon}" alt="${host}" class="w-12 h-12 rounded-lg bg-gray-800 object-cover" onerror="this.onerror=null; this.src='https://via.placeholder.com/64/1F2937/6B7280?text=MC';">`
-                            : `<div class="w-12 h-12 rounded-lg bg-gray-800 flex items-center justify-center">
+                ? `<img src="${favicon}" alt="${host}" class="w-12 h-12 rounded-lg bg-gray-800 object-cover" onerror="this.onerror=null; this.src='https://via.placeholder.com/64/1F2937/6B7280?text=MC';">`
+                : `<div class="w-12 h-12 rounded-lg bg-gray-800 flex items-center justify-center">
                                 <i class="fas fa-server text-2xl text-gray-600"></i>
                               </div>`
-                        }
+            }
                     </div>
 
                     <!-- Server Info -->
@@ -1271,24 +1466,6 @@ class ServerListManager {
                             </div>
                         </div>
                         
-                        <!-- Players -->
-                        ${playerList.length > 0 ? `
-                            <div class="mt-3">
-                                <div class="bg-black/30 border border-white/10 rounded-lg p-3 text-sm">
-                                    <div class="text-white/80 text-sm mb-1">
-                                        ${currentLang === 'ko' ? '플레이어 목록' : 'Online Players'} (${playerCount}/${maxPlayers}):
-                                    </div>
-                                    <div class="flex flex-wrap gap-1">
-                                        ${playerList.map(player => `
-                                            <span class="bg-white/5 px-2 py-0.5 rounded text-xs text-white/80">
-                                                ${this.escapeHtml(player.name || player)}
-                                            </span>
-                                        `).join('')}
-                                    </div>
-                                </div>
-                            </div>
-                        ` : ''}
-                        
                         <!-- MOTD -->
                         ${motd ? `
                             <div class="mt-3">
@@ -1311,15 +1488,15 @@ class ServerListManager {
             </div>
         `;
     }
-    
+
     // Show empty state when no servers are found
     showEmptyState() {
         if (!this.serverListElement) return;
-        
-        const noServersText = currentLang === 'ko' ? 
-            '서버를 찾을 수 없습니다.' : 
+
+        const noServersText = currentLang === 'ko' ?
+            '서버를 찾을 수 없습니다.' :
             'No servers found.';
-            
+
         this.serverListElement.innerHTML = `
             <div class="col-span-full text-center py-12">
                 <div class="bg-white/5 border border-white/10 rounded-lg p-6 max-w-2xl mx-auto">
@@ -1330,7 +1507,7 @@ class ServerListManager {
                 </div>
             </div>
         `;
-        
+
         // Update pagination to show 0 results
         this.updatePagination();
     }
@@ -1342,11 +1519,11 @@ class ServerListManager {
         const motd = (server.status?.motd?.clean || '').toLowerCase();
         return name.includes(term) || host.includes(term) || motd.includes(term);
     }
-    
+
     // Show or hide loading state
     showLoading(show) {
         if (!this.loadingElement) return;
-        
+
         if (show) {
             this.loadingElement.style.display = 'block';
             this.loadingElement.innerHTML = `
@@ -1359,7 +1536,7 @@ class ServerListManager {
             this.loadingElement.style.display = 'none';
         }
     }
-    
+
     // Show error message
     showError(message) {
         if (this.loadingElement) {
@@ -1371,10 +1548,10 @@ class ServerListManager {
                 </div>
             `;
         }
-        
+
         console.error(message);
     }
-    
+
     // Helper method to escape HTML
     escapeHtml(unsafe) {
         if (!unsafe) return '';
@@ -1393,31 +1570,31 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check if we're on the server list page
     if (document.getElementById('server-list')) {
         const serverListManager = new ServerListManager();
-        
+
         // Initialize the server list manager
         serverListManager.init();
-        
+
         // Add search input event listener
         const searchInput = document.getElementById('server-search');
         let searchTimeout;
-        
+
         if (searchInput) {
             const clearButton = searchInput.parentElement.querySelector('.clear-search');
-            
+
             // Function to update clear button visibility
             const updateClearButton = () => {
                 if (clearButton) {
                     clearButton.style.display = searchInput.value.trim() ? 'flex' : 'none';
                 }
             };
-            
+
             // Initial update
             updateClearButton();
-            
+
             // Handle input events with debounce
             searchInput.addEventListener('input', (e) => {
                 updateClearButton();
-                
+
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(() => {
                     // Reset to first page when searching
@@ -1425,7 +1602,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     serverListManager.renderServers();
                 }, 300); // 300ms debounce
             });
-            
+
             // Add clear button functionality
             if (clearButton) {
                 clearButton.addEventListener('click', () => {
@@ -1436,7 +1613,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     serverListManager.renderServers();
                 });
             }
-            
+
             // Handle escape key to clear search
             searchInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' && searchInput.value) {
@@ -1448,11 +1625,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         }
-        
+
         // Store the server list manager instance for debugging
         window.serverListManager = serverListManager;
     }
-    
+
     // Run the main function if it exists
     if (typeof main === 'function') {
         main();

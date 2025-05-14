@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="DP-PLUGINS - Minecraft plugins and resources">
-    <meta name="keywords" content="Minecraft, plugins, DP-PLUGINS, gaming, Minecraft plugins, server mods, 마인크래프트, 플러그인, 게임 모드, 서버 관리">
+    <meta name="keywords"
+        content="Minecraft, plugins, DP-PLUGINS, gaming, Minecraft plugins, server mods, 마인크래프트, 플러그인, 게임 모드, 서버 관리">
     <meta name="author" content="DP-PLUGINS">
     <meta property="og:title" content="DP-PLUGINS">
     <meta property="og:description" content="DP-PLUGINS - Minecraft plugins and resources">
@@ -24,6 +26,7 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
 </head>
+
 <body class="bg-[#1a1a1a]">
     <!-- 네비게이션 바 -->
     <nav class="fixed top-0 left-0 right-0 z-50 bg-black/70 backdrop-blur-xs border-b border-red-500/10">
@@ -33,10 +36,14 @@
                     <img src="assets/img/logo_white.png" alt="DP-PLUGINS" class="h-10 md:h-12 w-auto">
                 </a>
                 <div class="flex items-center space-x-4">
-                    <a href="/" class="text-white/80 hover:text-white px-3 py-2 rounded-md text-base font-bold transition-colors duration-200" data-i18n="home">
+                    <a href="/"
+                        class="text-white/80 hover:text-white px-3 py-2 rounded-md text-base font-bold transition-colors duration-200"
+                        data-i18n="home">
                         Home
                     </a>
-                    <a href="server-list.html" class="text-white/80 hover:text-white px-3 py-2 rounded-md text-base font-bold transition-colors duration-200" data-i18n="server_list">
+                    <a href="server-list.html"
+                        class="text-white/80 hover:text-white px-3 py-2 rounded-md text-base font-bold transition-colors duration-200"
+                        data-i18n="server_list">
                         Server List
                     </a>
                     <div class="sns-container bg-white/5 rounded-lg p-2 flex items-center">
@@ -47,11 +54,13 @@
                         </button>
                         <a href="https://discord.gg/JnMCqkn2FX" aria-label="Discord" target="_blank"
                             class="w-9 h-9 md:w-12 md:h-12 flex items-center justify-center rounded-full hover:bg-black/50 hover:scale-110 transition-all duration-300">
-                            <i class="fab fa-discord text-white/80 hover:text-white transition-colors duration-300 text-base md:text-xl"></i>
+                            <i
+                                class="fab fa-discord text-white/80 hover:text-white transition-colors duration-300 text-base md:text-xl"></i>
                         </a>
                         <a href="https://github.com/darksoldier1404" aria-label="GitHub" target="_blank"
                             class="w-9 h-9 md:w-12 md:h-12 flex items-center justify-center rounded-full hover:bg-black/50 hover:scale-110 transition-all duration-300">
-                            <i class="fab fa-github text-white/80 hover:text-white transition-colors duration-300 text-base md:text-xl"></i>
+                            <i
+                                class="fab fa-github text-white/80 hover:text-white transition-colors duration-300 text-base md:text-xl"></i>
                         </a>
                     </div>
                 </div>
@@ -63,39 +72,48 @@
     <main class="container mx-auto px-4 pt-24 pb-16">
         <div class="max-w-4xl mx-auto">
             <!-- 플러그인 헤더 -->
-            <div class="flex flex-col sm:flex-row items-start bg-black/30 rounded-xl p-4 sm:p-6 gap-4 sm:gap-6 mb-6 sm:mb-8">
+            <div
+                class="flex flex-col sm:flex-row items-start bg-black/30 rounded-xl p-4 sm:p-6 gap-4 sm:gap-6 mb-6 sm:mb-8">
                 <!-- 플러그인 아이콘 -->
-                <img id="plugin-icon" src="" alt="Plugin Icon" class="w-24 h-24 sm:w-32 sm:h-32 rounded-xl object-cover border border-white/10 shadow flex-shrink-0">
-                
+                <img id="plugin-icon" src="" alt="Plugin Icon"
+                    class="w-24 h-24 sm:w-32 sm:h-32 rounded-xl object-cover border border-white/10 shadow flex-shrink-0">
+
                 <!-- 플러그인 정보 -->
                 <div class="w-full">
                     <!-- 플러그인 제목 및 버전 -->
                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2">
-                        <h1 id="plugin-title" class="text-2xl sm:text-3xl md:text-4xl font-bold text-white break-words"></h1>
+                        <h1 id="plugin-title" class="text-2xl sm:text-3xl md:text-4xl font-bold text-white break-words">
+                        </h1>
                         <div class="flex flex-wrap gap-2">
-                            <span id="plugin-version" class="bg-blue-500/90 text-white text-xs sm:text-sm font-bold px-2 sm:px-3 py-1 rounded-full"></span>
-                            <span id="plugin-mc-version" class="bg-green-700/90 text-white text-xs sm:text-sm font-bold px-2 sm:px-3 py-1 rounded-full"></span>
+                            <span id="plugin-version"
+                                class="bg-blue-500/90 text-white text-xs sm:text-sm font-bold px-2 sm:px-3 py-1 rounded-full"></span>
+                            <span id="plugin-mc-version"
+                                class="bg-green-700/90 text-white text-xs sm:text-sm font-bold px-2 sm:px-3 py-1 rounded-full"></span>
                         </div>
                     </div>
-                    
+
                     <!-- 플러그인 설명 -->
                     <p id="plugin-description" class="text-white/80 text-sm sm:text-base md:text-lg mb-3 sm:mb-4"></p>
-                    
+
                     <!-- 액션 버튼들 -->
                     <div class="flex flex-wrap gap-2 sm:gap-3">
-                        <a id="download-btn" href="#" class="inline-flex items-center gap-1 sm:gap-2 bg-gradient-to-r from-red-500 to-red-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full hover:from-red-600 hover:to-red-700 transition-all duration-300 whitespace-nowrap">
+                        <a id="download-btn" href="#"
+                            class="inline-flex items-center gap-1 sm:gap-2 bg-gradient-to-r from-red-500 to-red-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full hover:from-red-600 hover:to-red-700 transition-all duration-300 whitespace-nowrap">
                             <i class="fas fa-download text-xs sm:text-sm"></i>
                             <span data-translate="download"></span>
                         </a>
-                        <a id="spigot-btn" href="#" target="_blank" class="inline-flex items-center gap-1 sm:gap-2 bg-purple-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full hover:bg-purple-700 transition-all duration-300 whitespace-nowrap">
+                        <a id="spigot-btn" href="#" target="_blank"
+                            class="inline-flex items-center gap-1 sm:gap-2 bg-purple-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full hover:bg-purple-700 transition-all duration-300 whitespace-nowrap">
                             <img src="assets/img/icon/spigot.svg" alt="SpigotMC" class="w-3.5 h-3.5 sm:w-4 sm:h-4">
                             <span data-translate="spigot">SpigotMC</span>
                         </a>
-                        <a id="hanger-btn" href="#" target="_blank" class="inline-flex items-center gap-1 sm:gap-2 bg-green-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full hover:bg-green-700 transition-all duration-300 whitespace-nowrap">
+                        <a id="hanger-btn" href="#" target="_blank"
+                            class="inline-flex items-center gap-1 sm:gap-2 bg-green-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full hover:bg-green-700 transition-all duration-300 whitespace-nowrap">
                             <img src="assets/img/icon/hanger.svg" alt="Hanger" class="w-3.5 h-3.5 sm:w-4 sm:h-4">
                             <span data-translate="hanger">Hanger</span>
                         </a>
-                        <a id="github-btn" href="#" target="_blank" class="inline-flex items-center gap-1 sm:gap-2 bg-gray-800 text-white px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full hover:bg-gray-700 transition-all duration-300 whitespace-nowrap">
+                        <a id="github-btn" href="#" target="_blank"
+                            class="inline-flex items-center gap-1 sm:gap-2 bg-gray-800 text-white px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full hover:bg-gray-700 transition-all duration-300 whitespace-nowrap">
                             <i class="fab fa-github text-xs sm:text-sm"></i>
                             <span data-translate="github">GitHub</span>
                         </a>
@@ -103,9 +121,28 @@
                 </div>
             </div>
 
+            <!-- 최신 업데이트 노트 -->
+            <div id="update-notes" class="mb-6 bg-black/30 rounded-xl p-6">
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                    <i class="fas fa-newspaper text-red-400"></i> <span data-translate="latest_update">Latest
+                        Update</span>
+                </h2>
+                <div class="p-4 rounded-lg mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-white/80 text-sm" id="update-date"></span>
+                        <span class="text-white/60 text-xs" id="update-version"></span>
+                    </div>
+                    <div id="release-notes" class="prose prose-invert max-w-none text-white/80 text-sm">
+                        <p class="text-white/60">Loading update notes...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 의존성 -->
             <div id="dependencies" class="mb-6 bg-black/30 rounded-xl p-6">
                 <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-                    <i class="fas fa-project-diagram text-red-400"></i> <span data-translate="dependencies"></span>
+                    <i class="fas fa-project-diagram text-red-400"></i> <span
+                        data-translate="dependencies">Dependencies</span>
                 </h2>
                 <div id="dependencies-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- Dependencies will be inserted here by JavaScript -->
@@ -132,6 +169,20 @@
                 <p class="text-center text-white/60">로드 중...</p>
             </div>
 
+            <!-- 업데이트 히스토리 -->
+            <div id="update-history" class="mt-6 bg-black/30 rounded-xl p-6">
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                    <i class="fas fa-history text-red-400"></i> <span data-translate="update_history">Update
+                        History</span>
+                </h2>
+                <div id="history-container" class="space-y-4">
+                    <div class="animate-pulse space-y-2">
+                        <div class="h-4 bg-white/10 rounded w-3/4"></div>
+                        <div class="h-3 bg-white/5 rounded w-1/2"></div>
+                    </div>
+                </div>
+            </div>
+
             <!-- 플러그인 목록 -->
             <div class="mt-6 bg-black/30 rounded-xl p-6">
                 <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2">
@@ -154,4 +205,5 @@
 
     <script src="script.js"></script>
 </body>
+
 </html>
