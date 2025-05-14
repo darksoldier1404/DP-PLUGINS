@@ -58,5 +58,11 @@
                 "recommended": []
             }
         }
-    ]
+    ],
+    "redirect": {
+        "EssentialsX": "https://essentialsx.net/",
+        "LuckPerms": "https://luckperms.net/",
+        "PlaceholderAPI": "https://www.spigotmc.org/resources/placeholderapi.6245/",
+        "WorldGuard": "https://enginehub.org/worldguard"
+    }
 }

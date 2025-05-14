@@ -2,6 +2,7 @@
   "download": "다운로드",
   "view_details": "상세 보기",
   "screenshots": "스크린샷",
+  "plugin_content": "플러그인 설명",
   "modal_screenshot": "스크린샷",
   "modal_install": "설치 방법",
   "modal_download": "다운로드",
@@ -43,8 +44,10 @@
   "version": "버전",
   "copy_address": "주소 복사",
   "copied": "복사됨!",
-  "last_updated": "마지막 업데이트",
+  "latest_update": "최신 업데이트",
+  "update_history": "업데이트 히스토리",
   "no_servers_found": "온라인인 서버가 없습니다.",
   "korean": "한국어",
-  "english": "English"
+  "english": "English",
+  "loading": "로드 중..."
 }
