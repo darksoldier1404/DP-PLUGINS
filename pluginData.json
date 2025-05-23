@@ -2,6 +2,9 @@
     "plugins": [
         {
             "name": "DPP-Core",
+            "developer": [
+                "DEAD_POOLIO_"
+            ],
             "description": {
                 "ko": "모든 DP-PLUGINS 플러그인을 위한<br>필수 API 플러그인입니다.",
                 "en": "All DP-PLUGINS plugins require this plugin."
@@ -21,6 +24,9 @@
         },
         {
             "name": "DP-Shop",
+            "developer": [
+                "DEAD_POOLIO_"
+            ],
             "description": {
                 "ko": "심플한 상점 플러그인 입니다.<br>간편한 상점 설정 지원.",
                 "en": "Simple shop plugin. Easy shop setup support."
@@ -41,6 +47,9 @@
         },
         {
             "name": "DP-SimplePrefix",
+            "developer": [
+                "DEAD_POOLIO_"
+            ],
             "description": {
                 "ko": "심플한 칭호 플러그인 입니다.<br>칭호 목록, 장착 GUI 지원.",
                 "en": "Simple prefix plugin. Prefix list, GUI support."
@@ -59,6 +68,26 @@
                     "LuckPerms",
                     "Vault"
                 ]
+            }
+        },
+        {
+            "name": "DP-BlankCheck",
+            "developer": [
+                "BlueEarthCat"
+            ],
+            "description": {
+                "ko": "심플한 수표 플러그인 입니다.<br>수표 아이템 설정은 간단하게 GUI로 설정 가능합니다.",
+                "en": "Simple blank check plugin.<br>you can set check item easily with GUI."
+            },
+            "pluginIcon": "assets/img/icon/paper.png",
+            "supportVersion": "1.14-1.21.5",
+            "pluginImgList": [],
+            "dependencies": {
+                "required": [
+                    "DPP-Core",
+                    "EssentialsX"
+                ],
+                "recommended": []
             }
         }
     ],

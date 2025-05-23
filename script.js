@@ -38,6 +38,7 @@ async function fetchPluginData() {
             required: [],
             recommended: [],
           },
+          developer: plugin.developer || [], // Add developer information
           releaseNotes: release.body || "No release notes available",
           releaseDate: release.published_at || "No release date available",
           repoUrl: `https://github.com/darksoldier1404/${plugin.name}`,
@@ -192,6 +193,22 @@ async function loadPluginInfo(allPlugins) {
   ).textContent = `MC ${plugin.supportVersion}`;
   document.getElementById("plugin-description").innerHTML =
     plugin.description[currentLang] || plugin.description.en || "";
+
+  // Display developer names
+  const developersContainer = document.getElementById("plugin-developers");
+  if (developersContainer && plugin.developer && Array.isArray(plugin.developer) && plugin.developer.length > 0) {
+    developersContainer.innerHTML = '';
+    plugin.developer.forEach(dev => {
+      const devElement = document.createElement('span');
+      devElement.className = 'bg-[#1E3A8A] text-[#E5E7EB] font-bold text-xs sm:text-sm px-2 py-1 rounded-full';
+      devElement.textContent = dev;
+      developersContainer.appendChild(devElement);
+      developersContainer.appendChild(document.createTextNode(' '));
+    });
+  } else if (developersContainer) {
+    developersContainer.innerHTML = '<span class="text-white/60">N/A</span>';
+  }
+
   const pluginIcon = document.getElementById("plugin-icon");
   if (plugin.imageUrl) pluginIcon.src = plugin.imageUrl;
   pluginIcon.alt = `${pluginName} icon`;
@@ -212,10 +229,12 @@ async function loadPluginInfo(allPlugins) {
   });
 
   const bstats = document.getElementById("bstats-container");
-  if (bstats) {
+  try {
     bstats.innerHTML = `<img src="https://bstats.org/signatures/bukkit/${pluginName}.svg" alt="${pluginName} Statistics" class="w-full h-auto rounded-xl" onerror="this.style.display='none'; this.parentElement.innerHTML+='<p class=\\'text-white/60 text-center\\' data-translate=\\'no_stats\\'>${
       langData[currentLang]?.no_stats || "Could not load statistics."
     }</p>';">`;
+  } catch (error) {
+    bstats.innerHTML = `<p class="text-white/60 text-center py-4">Could not load statistics.</p>`;
   }
 
   const hasDependencies =
@@ -398,7 +417,7 @@ async function loadReadme(pluginName) {
     const response = await fetch(
       `https://raw.githubusercontent.com/darksoldier1404/${pluginName}/master/README.md`
     );
-    if (!response.ok) throw new Error("Failed to load README");
+    if (!response.ok) return;
     let content = await response.text();
     const langTag = currentLang === "ko" ? "korean" : "english";
     const regex = new RegExp(
