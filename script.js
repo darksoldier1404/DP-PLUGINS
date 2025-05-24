@@ -4,6 +4,204 @@ let langData = { ko: kr, en: en };
 let currentLang = localStorage.getItem("language") || "en";
 let allPlugins = [];
 let redirect = {};
+let developersData = {};
+
+// Load developers data
+async function loadDevelopersData() {
+  try {
+    const response = await fetch('dev.json');
+    if (!response.ok) throw new Error('Failed to load developers data');
+    developersData = await response.json();
+    renderDeveloperCards();
+  } catch (error) {
+    console.error('Error loading developers data:', error);
+  }
+}
+
+// Render developer cards
+function renderDeveloperCards() {
+  const container = document.querySelector('.developer-section .grid');
+  if (!container) return;
+
+  container.innerHTML = Object.entries(developersData).map(([id, dev]) => `
+    <div class="bg-black/30 rounded-xl p-6 border border-white/10 hover:border-red-500/50 transition-all duration-300 cursor-pointer group" 
+         onclick="openDeveloperModal('${id}')">
+      <div class="flex items-center gap-4 mb-4">
+        <img src="https://github.com/${id}.png" alt="${dev.name}" 
+             class="w-16 h-16 rounded-full border-2 border-red-500/50" 
+             onerror="this.src='https://github.com/identicons/${id}.png'">
+        <div>
+          <h3 class="text-xl font-bold text-white">${dev.name}</h3>
+          <p class="text-white/60 text-sm">${dev.role || 'Developer'}</p>
+        </div>
+      </div>
+      <p class="text-white/80 text-sm line-clamp-3">${dev.introduction || 'No introduction available'}</p>
+    </div>
+  `).join('');
+}
+
+// Robust developer id matching utility
+function findDeveloperIdByName(name) {
+  const norm = (str) => (str || '').toLowerCase().replace(/\s+/g, '');
+  const target = norm(name);
+  for (const key in developersData) {
+    const devObj = developersData[key];
+    if (norm(devObj.id) === target || norm(devObj.name) === target) {
+      return devObj.id;
+    }
+  }
+  return null;
+}
+
+// Open developer modal (main page style, shared globally)
+window.openDeveloperModal = function(developerIdOrName) {
+  let developerId = developerIdOrName;
+  // If not found directly, try robust matching
+  if (!developersData[developerId]) {
+    const found = findDeveloperIdByName(developerIdOrName);
+    if (found) developerId = found;
+  }
+  let modal = document.getElementById('developerModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'developerModal';
+    modal.className = 'fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4';
+    modal.style.display = 'none';
+    document.body.appendChild(modal);
+  }
+  let modalContentEl = modal.querySelector('.developerModal');
+  if (!modalContentEl) {
+    modalContentEl = document.createElement('div');
+    modalContentEl.className = 'developerModal bg-[#18181c] rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto transition-all duration-300';
+    // Hide scrollbar cross-browser
+    modalContentEl.style.scrollbarWidth = 'none'; // Firefox
+    modalContentEl.style.msOverflowStyle = 'none'; // IE/Edge
+    modalContentEl.style.overflowY = 'auto';
+    modalContentEl.style.overflowX = 'hidden';
+    // For Chrome/Safari
+    modalContentEl.innerHTML = `<style>.developerModal::-webkit-scrollbar { display: none !important; width: 0 !important; background: transparent !important; }</style>` + modalContentEl.innerHTML;
+    modal.appendChild(modalContentEl);
+  }
+  const dev = developersData[developerId];
+
+  if (!dev) {
+    alert('해당 개발자 정보를 찾을 수 없습니다.');
+    return;
+  }
+
+  // Main page modal style (centered, clean, responsive)
+  const modalContent = `
+    <div class="flex flex-col items-center p-8 relative">
+      <button id="developerModalCloseBtn" class="absolute top-4 right-4 text-white/70 hover:text-red-400 bg-black/30 rounded-full p-2 shadow-lg transition-colors z-10">
+        <i class="fas fa-times text-2xl"></i>
+      </button>
+      <img src="https://github.com/${dev.id}.png"
+           alt="${dev.name}"
+           class="w-28 h-28 rounded-full border-4 border-red-500 shadow-lg mb-4 object-cover"
+           onerror="this.src='https://github.com/identicons/${dev.id}.png'">
+      <h3 class="text-3xl font-extrabold text-white mb-1">${dev.name}</h3>
+      <p class="text-red-400 font-semibold mb-4">${dev.role || 'Developer'}</p>
+      <p class="text-white/90 text-center mb-6">${dev.introduction || 'No introduction available.'}</p>
+      <div class="flex flex-col items-center gap-2 w-full">
+        ${dev.github ? `<a href="${dev.github}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 text-white/80 hover:text-white transition-colors text-lg"><i class="fab fa-github"></i> GitHub</a>` : ''}
+        ${dev.discord ? `<div class="inline-flex items-center gap-2 text-white/80 text-lg"><i class="fab fa-discord"></i> ${dev.discord}</div>` : ''}
+      </div>
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-1 gap-6 w-full">
+        ${findPluginByDeveloper(developerId).map(plugin => createPluginCard(plugin)).join('')}
+      </div>
+    </div>
+  `;
+  modalContentEl.innerHTML = modalContent;
+  modal.classList.remove('hidden');
+  modal.style.display = '';
+  document.body.style.overflow = 'hidden';
+  // Close button event
+  const closeBtn = document.getElementById('developerModalCloseBtn');
+  if (closeBtn) {
+    closeBtn.onclick = window.closeDeveloperModal;
+  }
+  // Click outside to close
+  modal.onclick = function(e) {
+    if (e.target === modal) {
+      window.closeDeveloperModal();
+    }
+  };
+};
+
+function findPluginByDeveloper(developerId) {
+  return allPlugins.filter(plugin => plugin.developer.includes(developerId));
+}
+
+// Close developer modal
+window.closeDeveloperModal = function() {
+  const modal = document.getElementById('developerModal');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+};
+
+// Ensure developer data is loaded before opening the modal
+window.openDeveloperModalWithLoad = function(developerIdOrName) {
+  if (!developersData || Object.keys(developersData).length === 0) {
+    loadDevelopersData().then(() => {
+      window.openDeveloperModal(developerIdOrName);
+    });
+  } else {
+    window.openDeveloperModal(developerIdOrName);
+  }
+};
+
+// Close developer modal
+window.closeDeveloperModal = function() {
+  const modal = document.getElementById('developerModal');
+  if (modal) {
+    modal.classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+};
+
+// Load developers data when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+  loadDevelopersData();
+});
+
+
+// Ensure developer data is loaded before opening the modal
+window.openDeveloperModalWithLoad = function(developerId) {
+  if (!developersData || Object.keys(developersData).length === 0) {
+    loadDevelopersData().then(() => {
+      window.openDeveloperModal(developerId);
+    });
+  } else {
+    window.openDeveloperModal(developerId);
+  }
+};
+
+// Close developer modal
+window.closeDeveloperModal = function() {
+  const modal = document.getElementById('developerModal');
+  if (modal) {
+    modal.classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+};
+
+// Close modal when clicking outside content
+document.addEventListener('DOMContentLoaded', () => {
+  const modal = document.getElementById('developerModal');
+  if (modal) {
+    modal.addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeDeveloperModal();
+      }
+    });
+  }
+  
+  // Load developers data when the page loads
+  loadDevelopersData();
+});
 
 async function fetchPluginData() {
   try {
@@ -200,8 +398,18 @@ async function loadPluginInfo(allPlugins) {
     developersContainer.innerHTML = '';
     plugin.developer.forEach(dev => {
       const devElement = document.createElement('span');
-      devElement.className = 'bg-[#1E3A8A] text-[#E5E7EB] font-bold text-xs sm:text-sm px-2 py-1 rounded-full';
-      devElement.textContent = dev;
+      devElement.className = 'inline-flex items-center gap-1 bg-white/10 hover:bg-white/20 px-2 py-1 rounded-lg text-white/90 hover:text-white transition-colors cursor-pointer';
+      devElement.innerHTML = `
+        <i class="fas fa-user text-red-400"></i>
+        <span>${dev}</span>
+      `;
+      devElement.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (window.openDeveloperModalWithLoad) {
+          window.openDeveloperModalWithLoad(dev);
+        }
+      };
       developersContainer.appendChild(devElement);
       developersContainer.appendChild(document.createTextNode(' '));
     });

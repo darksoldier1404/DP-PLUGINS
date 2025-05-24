@@ -3,7 +3,7 @@
         {
             "name": "DPP-Core",
             "developer": [
-                "DEAD_POOLIO_"
+                "darksoldier1404"
             ],
             "description": {
                 "ko": "모든 DP-PLUGINS 플러그인을 위한<br>필수 API 플러그인입니다.",
@@ -25,7 +25,7 @@
         {
             "name": "DP-Shop",
             "developer": [
-                "DEAD_POOLIO_"
+                "darksoldier1404"
             ],
             "description": {
                 "ko": "심플한 상점 플러그인 입니다.<br>간편한 상점 설정 지원.",
@@ -48,7 +48,7 @@
         {
             "name": "DP-SimplePrefix",
             "developer": [
-                "DEAD_POOLIO_"
+                "darksoldier1404"
             ],
             "description": {
                 "ko": "심플한 칭호 플러그인 입니다.<br>칭호 목록, 장착 GUI 지원.",
