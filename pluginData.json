@@ -96,8 +96,8 @@
                 "BlueEarthCat"
             ],
             "description": {
-                "ko": "DP-ConsumeBox는 커스터마이징 가능한 보상 상자 플러그인입니다.<br>서버 운영자가 원하는 대로 상자를 설정하고, 유저는 다양한 방식으로 보상을 획득할 수 있습니다.<br>직관적인 GUI와 강력한 기능으로, 이벤트 보상부터 꾸미기 아이템 지급까지 쉽게 활용하세요!",
-                "en": "DP-ConsumeBox is a customizable reward box plugin.<br>Server administrators can configure boxes as desired, and players can obtain rewards in various ways.<br>With an intuitive GUI and powerful features<br>it can be easily used for everything from event rewards to cosmetic item distribution!"
+                "ko": "DP-ConsumeBox는 커스터마이징 가능한 보상 상자 플러그인입니다.",
+                "en": "DP-ConsumeBox is a customizable reward box plugin."
             },
             "pluginIcon": "assets/img/icon/red_bundle.png",
             "supportVersion": "1.14-1.21.5",
