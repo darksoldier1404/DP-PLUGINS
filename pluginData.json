@@ -110,6 +110,25 @@
                 ],
                 "recommended": []
             }
+        },
+        {
+            "name": "DP-CustomFarming",
+            "developer": [
+                "darksoldier1404"
+            ],
+            "description": {
+                "ko": "DP-CustomFarming은 커스터마이징 가능한 농장 플러그인입니다.",
+                "en": "DP-CustomFarming is a customizable farming plugin."
+            },
+            "pluginIcon": "assets/img/icon/seed.png",
+            "supportVersion": "1.18-1.21.5",
+            "pluginImgList": [],
+            "dependencies": {
+                "required": [
+                    "DPP-Core"
+                ],
+                "recommended": []
+            }
         }
     ],
     "redirect": {
