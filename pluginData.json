@@ -40,7 +40,9 @@
             "dependencies": {
                 "required": [
                     "DPP-Core",
-                    "EssentialsX"
+                    "EssentialsX",
+                    "PlaceholderAPI",
+                    "Vault"
                 ],
                 "recommended": []
             }
