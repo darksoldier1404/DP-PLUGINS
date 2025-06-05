@@ -129,6 +129,27 @@
                 ],
                 "recommended": []
             }
+        },
+        {
+            "name": "DP-AFKShop",
+            "developer": [
+                "BlueEarthCat"
+            ],
+            "description": {
+                "ko": "DP-AFKShop은 AFK 포인트 및 상점 플러그인입니다.",
+                "en": "DP-AfkShop is an AFK point and shop plugin."
+            },
+            "pluginIcon": "assets/img/icon/clock.png",
+            "supportVersion": "1.14-1.21.5",
+            "pluginImgList": [],
+            "dependencies": {
+                "required": [
+                    "DPP-Core",
+                    "PlaceholderAPI",
+                    "WorldGuard"
+                ],
+                "recommended": []
+            }
         }
     ],
     "redirect": {
